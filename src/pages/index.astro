@@ -1,0 +1,999 @@
+---
+import { brand, brandCssVariablesStyle } from "@/data/brand";
+import { menuCategories } from "@/data/product-categories";
+import { listActiveMenuProducts } from "@/lib/db/products";
+import { getExchangeRates } from "@/lib/db/exchange-rates";
+import { isStoreOpen } from "@/lib/utils/schedule";
+import Card from "@/components/Card.astro";
+import CartDrawer from "@/components/cart/CartDrawer";
+import CurrencySwitch from "@/components/currency/CurrencySwitch.astro";
+import "@/styles/global.css";
+
+const [products, exchangeRates] = await Promise.all([
+  listActiveMenuProducts(),
+  getExchangeRates(),
+]);
+
+const storeIsOpen = isStoreOpen(
+  brand.contact.openingHour,
+  brand.contact.closingHour,
+);
+
+const categories = menuCategories
+  .map((category) => ({
+    id: category.id,
+    label: category.label,
+    products: products
+      .filter((product) => product.category === category.id)
+      .sort((a, b) => a.name.localeCompare(b.name)),
+  }))
+  .filter((category) => category.products.length > 0);
+
+const hasProducts = products.length > 0;
+
+// Configuración y variables SEO para www.tkeños-sc.com y tkeños-sc.com
+const siteUrl = "https://www.tkeños-sc.com";
+const canonicalUrl = `${siteUrl}/`;
+const seoTitle = `${brand.name} | Los Mejores Tequeños en San Cristóbal - Menú y Pedidos Online`;
+const seoDescription = `Pide los mejores tequeños, pastelitos, combos y pasapalos en San Cristóbal, Táchira. Menú digital de ${brand.name} con delivery y pick up directo a WhatsApp. ¡Pruébalos hoy!`;
+const ogImageUrl = `${siteUrl}/brand/og-image.png`;
+const logoUrl = `${siteUrl}/brand/logo.png`;
+
+// Generación de Datos Estructurados Schema.org para Google Rich Snippets
+const structuredData = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "FastFoodRestaurant",
+      "@id": `${siteUrl}/#restaurant`,
+      "name": brand.name,
+      "alternateName": [
+        "Tkeños SC",
+        "Tkenos SC",
+        "T-KEÑOS",
+        "tkeños-sc.com",
+        "www.tkeños-sc.com",
+      ],
+      "url": siteUrl,
+      "logo": logoUrl,
+      "image": [ogImageUrl, logoUrl],
+      "description": brand.tagline,
+      "telephone": brand.contact.phone,
+      "priceRange": "$$",
+      "servesCuisine": [
+        "Venezolana",
+        "Tequeños",
+        "Comida Rápida",
+        "Pasapalos",
+        "Pastelitos",
+      ],
+      "currenciesAccepted": "COP, USD, VES",
+      "paymentAccepted": "Efectivo, Pago Móvil, Transferencia Bancaria",
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": brand.contact.address,
+        "addressLocality": brand.contact.city,
+        "addressRegion": "Táchira",
+        "addressCountry": "VE",
+      },
+      "geo": {
+        "@type": "GeoCoordinates",
+        "latitude": 7.7669,
+        "longitude": -72.225,
+      },
+      "openingHoursSpecification": [
+        {
+          "@type": "OpeningHoursSpecification",
+          "dayOfWeek": [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday",
+          ],
+          "opens": brand.contact.openingHour || "08:00",
+          "closes": brand.contact.closingHour || "20:00",
+        },
+      ],
+      "hasMenu": `${siteUrl}/#menu-sections`,
+      "sameAs": ["https://www.instagram.com/tkenos.sc"],
+      "potentialAction": {
+        "@type": "OrderAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": siteUrl,
+          "inLanguage": "es",
+          "actionPlatform": [
+            "http://schema.org/DesktopWebPlatform",
+            "http://schema.org/MobileWebPlatform",
+          ],
+        },
+        "deliveryMethod": [
+          "http://purl.org/goodrelations/v1#DeliveryModePickUp",
+          "http://purl.org/goodrelations/v1#DeliveryModeOwnFleet",
+        ],
+      },
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${siteUrl}/#website`,
+      "url": siteUrl,
+      "name": brand.name,
+      "alternateName": "TKEÑOS San Cristóbal",
+      "description": brand.tagline,
+      "publisher": {
+        "@id": `${siteUrl}/#restaurant`,
+      },
+      "inLanguage": "es-VE",
+    },
+    {
+      "@type": "Menu",
+      "@id": `${siteUrl}/#menu`,
+      "name": `Menú ${brand.name}`,
+      "url": `${siteUrl}/#menu-sections`,
+      "mainEntityOfPage": siteUrl,
+      "inLanguage": "es-VE",
+      "hasMenuSection": categories.map((category) => ({
+        "@type": "MenuSection",
+        "name": category.label,
+        "hasMenuItem": category.products.slice(0, 15).map((product) => ({
+          "@type": "MenuItem",
+          "name": product.name,
+          "description": product.description || undefined,
+          "image": product.image_url || undefined,
+          "offers": {
+            "@type": "Offer",
+            "price": product.price,
+            "priceCurrency": "COP",
+            "availability":
+              product.has_inventory &&
+              product.stock !== null &&
+              product.stock !== undefined &&
+              product.stock <= 0
+                ? "https://schema.org/OutOfStock"
+                : "https://schema.org/InStock",
+          },
+        })),
+      })),
+    },
+  ],
+};
+---
+
+<!doctype html>
+<html lang={brand.locale}>
+  <head>
+    <!-- Metadatos de codificación y renderizado -->
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+
+    <!-- Título y Descripción Primarios (SEO) -->
+    <title>{seoTitle}</title>
+    <meta name="description" content={seoDescription} />
+    <meta
+      name="keywords"
+      content="tequeños San Cristóbal, tequeños Táchira, comida rápida San Cristóbal, comprar tequeños, pastelitos San Cristóbal, tequeños gourmet, delivery tequeños, pasapalos San Cristóbal, TKEÑOS SC, tkeños-sc.com, www.tkeños-sc.com, pedidos tequeños, tequeños venezolanos"
+    />
+    <meta name="author" content={brand.name} />
+    <meta name="publisher" content={brand.name} />
+    <meta name="application-name" content={brand.name} />
+
+    <!-- Control de Indexación y Rastreadores -->
+    <meta
+      name="robots"
+      content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+    />
+    <meta
+      name="googlebot"
+      content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+    />
+    <meta
+      name="bingbot"
+      content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1"
+    />
+
+    <!-- Enlaces Canónicos e Internacionalizados (IDN para www.tkeños-sc.com y tkeños-sc.com) -->
+    <link rel="canonical" href={canonicalUrl} />
+    <link rel="alternate" hreflang="es" href={canonicalUrl} />
+    <link rel="alternate" hreflang="es-VE" href={canonicalUrl} />
+    <link rel="alternate" hreflang="x-default" href={canonicalUrl} />
+
+    <!-- SEO Local y Geoposicionamiento (San Cristóbal, Táchira, Venezuela) -->
+    <meta name="geo.region" content="VE-T" />
+    <meta
+      name="geo.placename"
+      content="San Cristóbal, Estado Táchira, Venezuela"
+    />
+    <meta name="geo.position" content="7.7669;-72.2250" />
+    <meta name="ICBM" content="7.7669, -72.2250" />
+
+    <!-- Open Graph Protocol (WhatsApp, Facebook, Instagram, LinkedIn, Telegram) -->
+    <meta property="og:type" content="restaurant.menu" />
+    <meta property="og:site_name" content={brand.name} />
+    <meta property="og:title" content={seoTitle} />
+    <meta property="og:description" content={seoDescription} />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:locale" content="es_VE" />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:secure_url" content={ogImageUrl} />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content={`${brand.name} - Los mejores tequeños en San Cristóbal`}
+    />
+
+    <!-- Twitter / X Cards -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content={canonicalUrl} />
+    <meta name="twitter:title" content={seoTitle} />
+    <meta name="twitter:description" content={seoDescription} />
+    <meta name="twitter:image" content={ogImageUrl} />
+    <meta
+      name="twitter:image:alt"
+      content={`${brand.name} - Tequeños en San Cristóbal`}
+    />
+
+    <!-- Favicon e Iconos de Dispositivos -->
+    <link rel="icon" type="image/png" href={brand.assets.favicon} />
+    <link rel="apple-touch-icon" href={brand.assets.logo} />
+
+    <!-- PWA y Personalización del Navegador Móvil -->
+    <meta name="theme-color" content={brand.colors.background} />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content={brand.name} />
+    <meta name="format-detection" content="telephone=yes, address=yes" />
+
+    <!-- Preconexión de Fuentes y Rendimiento -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Datos Estructurados JSON-LD (Schema.org Restaurant, WebSite y Menu) -->
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+
+    <!-- Variables CSS de Marca -->
+    <style is:global set:html={brandCssVariablesStyle()}></style>
+  </head>
+  <body>
+    <!-- SELECTOR DE MONEDA FLOTANTE (FIXED CORNER) -->
+    <CurrencySwitch rates={exchangeRates} />
+
+    <!-- HERO DE RESTAURANTE -->
+    <header class="menu-hero">
+      <div class="menu-hero__ambient" aria-hidden="true"></div>
+      <div class="menu-hero__inner">
+        <div class="menu-hero__topbar">
+          <div
+            class={`menu-hero__status ${storeIsOpen ? "menu-hero__status--open" : "menu-hero__status--closed"}`}
+            id="store-status-badge"
+            data-open-hour={brand.contact.openingHour || ""}
+            data-close-hour={brand.contact.closingHour || ""}
+          >
+            <span
+              class={`menu-hero__status-dot ${storeIsOpen ? "" : "menu-hero__status-dot--closed"}`}
+              aria-hidden="true"></span>
+            <span id="store-status-text"
+              >{
+                storeIsOpen ? "Abierto para pedidos" : "Cerrado para pedidos"
+              }</span
+            >
+            {
+              brand.contact.openingHour && brand.contact.closingHour && (
+                <span class="menu-hero__status-hours">
+                  ({brand.contact.openingHour} - {brand.contact.closingHour})
+                </span>
+              )
+            }
+          </div>
+
+          {
+            brand.contact.city && brand.contact.country && (
+              <div class="menu-hero__location">
+                <svg
+                  viewBox="0 0 24 24"
+                  width="14"
+                  height="14"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+                  <circle cx="12" cy="10" r="3" />
+                </svg>
+                <span>
+                  {brand.contact.city}, {brand.contact.country}
+                </span>
+              </div>
+            )
+          }
+        </div>
+
+        <div class="menu-hero__brand">
+          <div class="menu-hero__logo-wrap">
+            <img
+              src={brand.assets.logo}
+              alt={brand.name}
+              class="menu-hero__logo"
+              width={84}
+              height={84}
+            />
+          </div>
+          <div class="menu-hero__copy">
+            <h1 class="menu-hero__name">{brand.name}</h1>
+            <p class="menu-hero__tagline">{brand.tagline}</p>
+            <p class="sr-only">
+              Menú digital de comida rápida, tequeños gourmet, pastelitos y combos en San Cristóbal, Estado Táchira. Pedidos directos a domicilio y para llevar.
+            </p>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="menu">
+      <!-- BARRA DE BÚSQUEDA Y CATEGORÍAS -->
+      <section class="menu__controls">
+        <div class="menu__controls-inner">
+          <div class="menu__search-box">
+            <span class="menu__search-icon" aria-hidden="true">
+              <svg
+                viewBox="0 0 24 24"
+                width="20"
+                height="20"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+              </svg>
+            </span>
+            <input
+              id="menu-search"
+              type="search"
+              placeholder="Buscar en el menú (ej. hamburguesa, papas, bebida)..."
+              aria-label="Buscar un producto en el menú"
+              autocomplete="off"
+            />
+          </div>
+
+          {
+            categories.length > 0 && (
+              <nav class="menu__categories" aria-label="Categorías del menú">
+                {categories.map((category) => (
+                  <a class="menu__category-chip" href={`#${category.id}`}>
+                    <span class="menu__category-name">{category.label}</span>
+                    <span class="menu__category-count">
+                      {category.products.length}
+                    </span>
+                  </a>
+                ))}
+              </nav>
+            )
+          }
+        </div>
+      </section>
+
+      <!-- SECCIÓN SIN RESULTADOS DE BÚSQUEDA -->
+      <div class="menu__no-results" id="menu-no-results" hidden>
+        <div class="menu__no-results-icon" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            width="48"
+            height="48"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.6"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            <line x1="8" y1="11" x2="14" y2="11"></line>
+          </svg>
+        </div>
+        <h3>No encontramos platos que coincidan</h3>
+        <p>
+          Prueba buscando con otro término o explora las categorías del
+          restaurante.
+        </p>
+      </div>
+
+      <!-- LISTADO DE SECCIONES -->
+      {
+        !hasProducts ? (
+          <div class="menu__empty">
+            <div class="menu__empty-illustration">🍽️</div>
+            <h3>Menú en preparación</h3>
+            <p>
+              Pronto podrás explorar y ordenar nuestras especialidades
+              culinarias.
+            </p>
+          </div>
+        ) : (
+          <div class="menu__sections" id="menu-sections">
+            {categories.map((category) => (
+              <section class="menu-section" id={category.id} data-category>
+                <header class="menu-section__header">
+                  <div class="menu-section__title-group">
+                    <h2 class="menu-section__title">{category.label}</h2>
+                    <span class="menu-section__badge">
+                      {category.products.length}{" "}
+                      {category.products.length === 1 ? "opción" : "opciones"}
+                    </span>
+                  </div>
+                  <div class="menu-section__line" aria-hidden="true" />
+                </header>
+
+                <div class="menu-grid">
+                  {category.products.map((product) => (
+                    <Card product={product} />
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
+        )
+      }
+    </main>
+
+    <!-- CARRITO / PEDIDO LATERAL REACT COMPONENT -->
+    <CartDrawer
+      client:load
+      brandName={brand.name}
+      brandPhone={brand.contact.phone}
+      showFloatingButton={true}
+      exchangeRates={exchangeRates}
+      openingHour={brand.contact.openingHour}
+      closingHour={brand.contact.closingHour}
+      initialProducts={products}
+    />
+
+    <script>
+      const search = document.getElementById(
+        "menu-search",
+      ) as HTMLInputElement | null;
+      const sections = Array.from(
+        document.querySelectorAll<HTMLElement>("[data-category]"),
+      );
+      const cards = Array.from(
+        document.querySelectorAll<HTMLElement>(".menu-card"),
+      );
+      const noResults = document.getElementById(
+        "menu-no-results",
+      ) as HTMLElement | null;
+
+      if (search) {
+        search.addEventListener("input", () => {
+          const query = search.value.trim().toLowerCase();
+
+          cards.forEach((card) => {
+            const name = card.dataset.name ?? "";
+            const match = !query || name.includes(query);
+            card.hidden = !match;
+          });
+
+          let visibleSectionCount = 0;
+          sections.forEach((section) => {
+            const visible = Array.from(
+              section.querySelectorAll<HTMLElement>(".menu-card"),
+            ).some((card) => !card.hidden);
+            section.hidden = !visible;
+            if (visible) visibleSectionCount++;
+          });
+
+          if (noResults) {
+            noResults.hidden = visibleSectionCount > 0 || !query;
+          }
+        });
+      }
+
+      // Actualización reactiva del badge de estado según horario de Venezuela
+      const statusBadge = document.getElementById("store-status-badge");
+      const statusText = document.getElementById("store-status-text");
+      const statusDot = statusBadge?.querySelector(".menu-hero__status-dot");
+      const openH = statusBadge?.dataset.openHour;
+      const closeH = statusBadge?.dataset.closeHour;
+
+      function updateStatusBadge() {
+        if (!statusBadge || !statusText || !openH || !closeH) return;
+        const parseMinutes = (t: string) => {
+          const [h, m] = t.split(":").map(Number);
+          return (h || 0) * 60 + (m || 0);
+        };
+        const parts = new Intl.DateTimeFormat("en-US", {
+          timeZone: "America/Caracas",
+          hour: "numeric",
+          minute: "numeric",
+          hour12: false,
+        }).formatToParts(new Date());
+        const hourPart = parts.find((p) => p.type === "hour")?.value ?? "0";
+        const minPart = parts.find((p) => p.type === "minute")?.value ?? "0";
+        const curMin =
+          (parseInt(hourPart, 10) % 24) * 60 + parseInt(minPart, 10);
+
+        const oMin = parseMinutes(openH);
+        const cMin = parseMinutes(closeH);
+        let open = false;
+        if (oMin === cMin) open = true;
+        else if (oMin < cMin) open = curMin >= oMin && curMin < cMin;
+        else open = curMin >= oMin || curMin < cMin;
+
+        if (open) {
+          statusBadge.classList.add("menu-hero__status--open");
+          statusBadge.classList.remove("menu-hero__status--closed");
+          statusDot?.classList.remove("menu-hero__status-dot--closed");
+          statusText.textContent = "Abierto para pedidos";
+        } else {
+          statusBadge.classList.remove("menu-hero__status--open");
+          statusBadge.classList.add("menu-hero__status--closed");
+          statusDot?.classList.add("menu-hero__status-dot--closed");
+          statusText.textContent = "Cerrado para pedidos";
+        }
+      }
+
+      setInterval(updateStatusBadge, 30000);
+    </script>
+  </body>
+</html>
+
+<style>
+  :global(body) {
+    margin: 0;
+    font-family:
+      "Plus Jakarta Sans",
+      "Inter",
+      system-ui,
+      -apple-system,
+      sans-serif;
+    background: var(--color-primary);
+  }
+
+  /* HERO DEL RESTAURANTE */
+  .menu-hero {
+    position: relative;
+    background: var(--color-secondary);
+    color: var(--color-text);
+    padding: 2.5rem 1.5rem 2.75rem;
+    overflow: hidden;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  .menu-hero__ambient {
+    position: absolute;
+    top: -30%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 650px;
+    height: 650px;
+    border-radius: 50%;
+    background: radial-gradient(
+      circle,
+      color-mix(in srgb, var(--color-primary) 16%, transparent) 0%,
+      transparent 70%
+    );
+    pointer-events: none;
+  }
+
+  .menu-hero__inner {
+    position: relative;
+    max-width: 76rem;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.75rem;
+    z-index: 1;
+  }
+
+  .menu-hero__topbar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+    font-size: 0.8125rem;
+    width: 100%;
+  }
+
+  .menu-hero__status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.95rem;
+    background: color-mix(in srgb, var(--color-background) 90%, transparent);
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    font-weight: 600;
+    transition: all 0.25s ease;
+  }
+
+  .menu-hero__status--open {
+    border-color: var(--color-success);
+    background: var(--color-primary);
+    color: var(--color-success);
+  }
+
+  .menu-hero__status--closed {
+    border-color: var(--color-error);
+    background: var(--color-primary);
+    color: var(--color-error);
+  }
+
+  .menu-hero__status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--color-success);
+    box-shadow: 0 0 10px var(--color-success);
+    animation: statusPulse 2s infinite ease-in-out;
+  }
+
+  .menu-hero__status-dot--closed {
+    background: var(--color-error);
+    box-shadow: 0 0 8px color-mix(in srgb, var(--color-error) 60%, transparent);
+    animation: none;
+  }
+
+  .menu-hero__status-hours {
+    font-size: 0.75rem;
+    font-weight: 500;
+    opacity: 0.85;
+  }
+
+  @keyframes statusPulse {
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+    50% {
+      opacity: 0.6;
+      transform: scale(1.25);
+    }
+  }
+
+  .menu-hero__location {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--color-background);
+    font-weight: 500;
+  }
+
+  /* LOGO Y NOMBRE DEL NEGOCIO CENTRADO */
+  .menu-hero__brand {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    gap: 1.15rem;
+  }
+
+  .menu-hero__logo-wrap {
+    flex-shrink: 0;
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    padding: 0.4rem;
+    background: white;
+    box-shadow:
+      0 12px 30px -4px rgba(0, 0, 0, 0.12),
+      0 0 0 3px color-mix(in srgb, var(--color-primary) 35%, transparent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid var(--color-accent);
+  }
+
+  .menu-hero__logo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 50%;
+  }
+
+  .menu-hero__copy {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: 38rem;
+  }
+
+  .menu-hero__name {
+    margin: 0;
+    font-size: clamp(1.75rem, 4vw, 2.5rem);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+    color: var(--color-background);
+  }
+
+  .menu-hero__tagline {
+    margin: 0.45rem 0 0;
+    font-size: 1rem;
+    color: var(--color-text-muted);
+    line-height: 1.45;
+  }
+
+  /* MAIN WRAPPER */
+  .menu {
+    max-width: 76rem;
+    margin: 0 auto;
+    padding: 0 1.5rem 6rem;
+  }
+
+  /* BARRA DE CONTROLES: BUSCADOR Y CATEGORÍAS */
+  .menu__controls {
+    position: relative;
+    z-index: 40;
+    margin-top: -1.25rem;
+    margin-bottom: 2.75rem;
+    padding: 0.85rem 0;
+    background: transparent;
+  }
+
+  .menu__controls-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  .menu__search-box {
+    position: relative;
+    max-width: 42rem;
+    width: 100%;
+    margin: 0 auto;
+  }
+
+  .menu__search-icon {
+    position: absolute;
+    left: 1.25rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-text-muted);
+    display: flex;
+    align-items: center;
+    pointer-events: none;
+  }
+
+  .menu__search-box input {
+    width: 100%;
+    padding: 1rem 1.25rem 1rem 3.1rem;
+    font-size: 0.975rem;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: white;
+    color: var(--color-background);
+    box-shadow:
+      0 8px 24px -4px rgba(0, 0, 0, 0.1),
+      0 2px 6px -1px rgba(0, 0, 0, 0.05);
+    outline: none;
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease,
+      background-color 0.2s ease;
+  }
+
+  .menu__search-box input::placeholder {
+    color: var(--color-text-muted);
+  }
+
+  .menu__search-box input:focus {
+    border-color: var(--color-primary);
+    background: var(--color-primary);
+    box-shadow:
+      0 0 0 4px color-mix(in srgb, var(--color-primary) 20%, transparent),
+      0 12px 28px -4px rgba(0, 0, 0, 0.15);
+  }
+
+  /* CATEGORÍAS */
+  .menu__categories {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding: 0.25rem 0.5rem 0.5rem;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .menu__categories::-webkit-scrollbar {
+    display: none;
+  }
+
+  .menu__category-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 1.15rem;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: white;
+    color: var(--color-background);
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 700;
+    white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition:
+      background-color 0.2s ease,
+      color 0.2s ease,
+      border-color 0.2s ease,
+      transform 0.15s ease,
+      box-shadow 0.2s ease;
+  }
+
+  .menu__category-chip:hover {
+    border-color: var(--color-primary);
+    background: var(--color-secondary);
+    color: var(--color-background);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px
+      color-mix(in srgb, var(--color-primary) 25%, transparent);
+  }
+
+  .menu__category-count {
+    font-size: 0.75rem;
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    background: var(--color-background);
+    color: var(--color-text);
+    font-weight: 700;
+  }
+
+  /* SECCIÓN VACÍA O SIN RESULTADOS */
+  .menu__no-results {
+    text-align: center;
+    padding: 4rem 1.5rem;
+    background: var(--color-surface);
+    border: 1px dashed var(--color-border);
+    border-radius: 1.5rem;
+    margin: 2rem 0;
+  }
+
+  .menu__no-results-icon {
+    color: var(--color-primary);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .menu__no-results h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.35rem;
+    font-weight: 800;
+    color: var(--color-text);
+  }
+
+  .menu__no-results p {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-size: 0.95rem;
+  }
+
+  .menu__empty {
+    text-align: center;
+    padding: 5rem 1.5rem;
+  }
+
+  .menu__empty-illustration {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .menu__empty h3 {
+    margin: 0 0 0.5rem;
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--color-text);
+  }
+
+  .menu__empty p {
+    margin: 0;
+    color: var(--color-text-muted);
+  }
+
+  /* SECCIONES Y GRILLA */
+  .menu__sections {
+    display: flex;
+    flex-direction: column;
+    gap: 4.25rem;
+  }
+
+  .menu-section {
+    scroll-margin-top: 6.5rem;
+  }
+
+  .menu-section__header {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    margin-bottom: 1.75rem;
+  }
+
+  .menu-section__title-group {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    flex-shrink: 0;
+  }
+
+  .menu-section__title {
+    margin: 0;
+    font-size: clamp(1.4rem, 3vw, 1.85rem);
+    font-weight: 800;
+    letter-spacing: -0.025em;
+    color: var(--color-background);
+  }
+
+  .menu-section__badge {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--color-text);
+    background: var(--color-background);
+    border: 1px solid color-mix(in srgb, var(--color-primary) 28%, transparent);
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+  }
+
+  .menu-section__line {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(
+      90deg,
+      var(--color-border) 0%,
+      color-mix(in srgb, var(--color-border) 40%, transparent) 60%,
+      transparent 100%
+    );
+  }
+
+  .menu-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+  }
+
+  @media (max-width: 640px) {
+    .menu-hero {
+      padding: 2rem 1rem 2.25rem;
+    }
+
+    .menu-hero__logo-wrap {
+      width: 76px;
+      height: 76px;
+    }
+
+    .menu {
+      padding: 0 1rem 5rem;
+    }
+
+    .menu__categories {
+      justify-content: flex-start;
+    }
+  }
+</style>

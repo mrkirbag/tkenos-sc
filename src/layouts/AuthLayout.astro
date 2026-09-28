@@ -1,0 +1,395 @@
+---
+import { brand, brandCssVariablesStyle } from "@/data/brand";
+import "@/styles/global.css";
+
+interface Props {
+  title?: string;
+}
+
+const { title = `Iniciar sesión | ${brand.name}` } = Astro.props;
+---
+
+<!doctype html>
+<html lang={brand.locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script is:inline>
+      // 1. Silencia errores no controlados inyectados por extensiones del navegador
+      // (p. ej. Urban VPN Proxy con 200.js / 'M_ID') para evitar alertas falsas en consola.
+      const isExtensionNoise = (err) => {
+        const msg = typeof err === "string" ? err : err?.message || "";
+        const stack = err?.stack || "";
+        return (
+          msg.includes("reading 'M_ID'") ||
+          msg.includes("M_ID") ||
+          stack.includes("200.js")
+        );
+      };
+
+      window.addEventListener("unhandledrejection", (event) => {
+        if (isExtensionNoise(event.reason)) {
+          event.preventDefault();
+        }
+      });
+
+      window.addEventListener("error", (event) => {
+        if (
+          isExtensionNoise(event.error) ||
+          event.filename?.includes("200.js")
+        ) {
+          event.preventDefault();
+        }
+      });
+
+      // 2. Elimina atributos inyectados por extensiones del navegador
+      // (p. ej. Bitdefender) antes de que React hidrate, para evitar
+      // falsos positivos de "hydration mismatch".
+      (() => {
+        const ATTR = "bis_skin_checked";
+
+        const strip = (node) => {
+          if (!node || node.nodeType !== 1) return;
+          node.removeAttribute(ATTR);
+        };
+
+        document.querySelectorAll(`[${ATTR}]`).forEach(strip);
+
+        const observer = new MutationObserver((mutations) => {
+          for (const mutation of mutations) {
+            if (
+              mutation.type === "attributes" &&
+              mutation.attributeName === ATTR
+            ) {
+              strip(mutation.target);
+            } else if (mutation.type === "childList") {
+              mutation.addedNodes.forEach((node) => {
+                if (node.nodeType === 1) {
+                  strip(node);
+                  node.querySelectorAll?.(`[${ATTR}]`).forEach(strip);
+                }
+              });
+            }
+          }
+        });
+
+        observer.observe(document.documentElement, {
+          attributes: true,
+          childList: true,
+          subtree: true,
+        });
+      })();
+    </script>
+    <link rel="icon" type="image/webp" href={brand.assets.favicon} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <title>{title}</title>
+    <style is:global set:html={brandCssVariablesStyle()}></style>
+  </head>
+  <body>
+    <div class="auth">
+      <aside class="auth__brand">
+        <div class="auth__brand-overlay"></div>
+        <div class="auth__brand-content">
+          <div class="auth__logo-badge">
+            <img
+              src={brand.assets.logo}
+              alt={brand.name}
+              class="auth__logo"
+              width={220}
+              height={220}
+            />
+          </div>
+          <h1 class="auth__name">{brand.name}</h1>
+          <div class="auth__name-accent">
+            <span class="auth__accent-line"></span>
+            <span class="auth__accent-dot"></span>
+            <span class="auth__accent-line"></span>
+          </div>
+          <p class="auth__tagline">{brand.tagline}</p>
+          {
+            brand.contact.city && brand.contact.country && (
+              <div class="auth__location-badge">
+                <svg
+                  class="auth__location-icon"
+                  viewBox="0 0 24 24"
+                  width="15"
+                  height="15"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+                  <circle cx="12" cy="10" r="3" />
+                </svg>
+                <span>
+                  {brand.contact.city}, {brand.contact.country}
+                </span>
+              </div>
+            )
+          }
+        </div>
+      </aside>
+
+      <main class="auth__main">
+        <slot />
+      </main>
+    </div>
+  </body>
+</html>
+
+<style>
+  :global(html),
+  :global(body) {
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow: hidden;
+  }
+
+  .auth {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    height: 100dvh;
+    max-height: 100dvh;
+    overflow: hidden;
+  }
+
+  .auth__brand {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    max-height: 100dvh;
+    overflow: hidden;
+    padding: clamp(1rem, 3vh, 2rem) 1.5rem;
+    background:
+      linear-gradient(
+        155deg,
+        color-mix(in srgb, var(--color-secondary) 95%, white) 0%,
+        var(--color-secondary) 50%,
+        color-mix(in srgb, var(--color-secondary) 90%, #d97706) 100%
+      ),
+      var(--color-secondary);
+    background-size: cover;
+    background-position: center;
+  }
+
+  .auth__brand-overlay {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(
+        circle at 15% 15%,
+        rgba(255, 255, 255, 0.22) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        circle at 85% 85%,
+        color-mix(in srgb, black 12%, transparent) 0%,
+        transparent 55%
+      );
+    pointer-events: none;
+  }
+
+  .auth__brand-content {
+    position: relative;
+    z-index: 1;
+    max-width: 28rem;
+    padding: 0;
+    text-align: center;
+    color: var(--color-secondary-foreground);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .auth__logo-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: clamp(100px, 15vh, 160px);
+    aspect-ratio: 1;
+    margin: 0 auto clamp(0.6rem, 1.8vh, 1.25rem);
+    padding: clamp(0.75rem, 1.5vh, 1.15rem);
+    border-radius: 50%;
+    background: var(--color-primary);
+    box-shadow:
+      0 10px 24px color-mix(in srgb, black 16%, transparent),
+      0 0 0 5px color-mix(in srgb, var(--color-primary) 55%, white),
+      0 0 0 9px
+        color-mix(in srgb, var(--color-secondary-foreground) 12%, transparent);
+    transition:
+      transform 0.25s ease,
+      box-shadow 0.25s ease;
+  }
+
+  .auth__logo-badge:hover {
+    transform: scale(1.03);
+    box-shadow:
+      0 14px 30px color-mix(in srgb, black 22%, transparent),
+      0 0 0 6px color-mix(in srgb, var(--color-primary) 65%, white),
+      0 0 0 11px
+        color-mix(in srgb, var(--color-secondary-foreground) 16%, transparent);
+  }
+
+  .auth__logo {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.12));
+  }
+
+  .auth__name {
+    margin: 0 0 0.25rem;
+    font-size: clamp(1.75rem, 3.8vh, 2.5rem);
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    line-height: 1.1;
+    color: var(--color-secondary-foreground);
+    text-transform: uppercase;
+    text-shadow: 0 2px 4px color-mix(in srgb, black 12%, transparent);
+  }
+
+  .auth__name-accent {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    margin: 0.35rem auto clamp(0.4rem, 1.2vh, 0.85rem);
+    width: 90px;
+  }
+
+  .auth__accent-line {
+    flex: 1;
+    height: 2px;
+    background: color-mix(
+      in srgb,
+      var(--color-secondary-foreground) 35%,
+      transparent
+    );
+    border-radius: 9999px;
+  }
+
+  .auth__accent-dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--color-secondary-foreground);
+    opacity: 0.8;
+  }
+
+  .auth__tagline {
+    margin: 0 0 clamp(0.5rem, 1.5vh, 1.1rem);
+    font-size: clamp(0.9rem, 1.6vh, 1.05rem);
+    font-weight: 500;
+    line-height: 1.45;
+    color: color-mix(
+      in srgb,
+      var(--color-secondary-foreground) 90%,
+      transparent
+    );
+    letter-spacing: 0.01em;
+    text-shadow: 0 1px 2px color-mix(in srgb, black 8%, transparent);
+  }
+
+  .auth__location-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0;
+    padding: 0.35rem 0.95rem;
+    border-radius: 9999px;
+    background: color-mix(
+      in srgb,
+      var(--color-secondary-foreground) 10%,
+      transparent
+    );
+    border: 1px solid
+      color-mix(in srgb, var(--color-secondary-foreground) 18%, transparent);
+    backdrop-filter: blur(8px);
+    color: var(--color-secondary-foreground);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    box-shadow: 0 2px 8px color-mix(in srgb, black 8%, transparent);
+  }
+
+  .auth__location-icon {
+    flex-shrink: 0;
+    opacity: 0.85;
+  }
+
+  .auth__main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    max-height: 100dvh;
+    padding: clamp(1rem, 2.8vh, 2rem) 1.5rem;
+    background:
+      radial-gradient(
+        circle at 95% 5%,
+        color-mix(in srgb, var(--color-secondary) 15%, transparent) 0%,
+        transparent 45%
+      ),
+      radial-gradient(
+        circle at 5% 95%,
+        color-mix(in srgb, var(--color-secondary) 10%, transparent) 0%,
+        transparent 40%
+      ),
+      var(--color-primary);
+    position: relative;
+    overflow: hidden;
+  }
+
+  @media (max-width: 900px) {
+    :global(html),
+    :global(body) {
+      height: 100dvh;
+      max-height: 100dvh;
+      overflow-y: auto;
+    }
+
+    .auth {
+      grid-template-columns: 1fr;
+      height: 100dvh;
+      max-height: 100dvh;
+      overflow-y: auto;
+    }
+
+    .auth__brand {
+      display: none;
+    }
+
+    .auth__main {
+      min-height: 100dvh;
+      height: 100dvh;
+      max-height: 100dvh;
+      padding: clamp(0.75rem, 2vh, 1.25rem) 1rem;
+      overflow-y: auto;
+    }
+  }
+</style>
+
+<script define:vars={{ loginBackground: brand.assets.loginBackground }}>
+  if (loginBackground) {
+    const brandPanel = document.querySelector(".auth__brand");
+    if (brandPanel) {
+      const image = new Image();
+      image.onload = () => {
+        brandPanel.style.backgroundImage = `linear-gradient(145deg, rgb(26 26 46 / 88%), rgb(26 26 46 / 72%)), url('${loginBackground}')`;
+        brandPanel.style.backgroundSize = "cover";
+        brandPanel.style.backgroundPosition = "center";
+      };
+      image.src = loginBackground;
+    }
+  }
+</script>

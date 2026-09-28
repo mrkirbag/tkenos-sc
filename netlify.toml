@@ -1,0 +1,44 @@
+[build]
+  command = "pnpm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "22"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Redirecciones canónicas 301 para consolidación SEO (tkeños-sc.com -> www.tkeños-sc.com)
+[[redirects]]
+  from = "https://tkeños-sc.com/*"
+  to = "https://www.tkeños-sc.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://tkeños-sc.com/*"
+  to = "https://www.tkeños-sc.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://www.tkeños-sc.com/*"
+  to = "https://www.tkeños-sc.com/:splat"
+  status = 301
+  force = true
+
+# Compatibilidad IDN Punycode (xn--tkeos-sc-f3a.com)
+[[redirects]]
+  from = "https://xn--tkeos-sc-f3a.com/*"
+  to = "https://www.tkeños-sc.com/:splat"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "http://xn--tkeos-sc-f3a.com/*"
+  to = "https://www.tkeños-sc.com/:splat"
+  status = 301
+  force = true

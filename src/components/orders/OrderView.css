@@ -1,0 +1,1568 @@
+.order-view__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  color: var(--color-secondary);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.order-view__back:hover {
+  text-decoration: underline;
+}
+
+.order-view__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.order-view__eyebrow {
+  margin: 0 0 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-secondary);
+}
+
+.order-view__title {
+  margin: 0;
+  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+  font-weight: 700;
+  color: var(--color-primary-foreground);
+}
+
+.order-view__status {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.375rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.order-view__status--pendiente {
+  background: color-mix(in srgb, var(--color-warning) 25%, white);
+  color: color-mix(in srgb, var(--color-warning) 70%, black);
+}
+
+.order-view__status--cocina {
+  background: color-mix(in srgb, var(--color-secondary) 25%, white);
+  border: 1px solid color-mix(in srgb, var(--color-secondary) 45%, transparent);
+  color: var(--color-primary-foreground);
+  font-weight: 700;
+}
+
+.order-view__status--entregado {
+  background: color-mix(in srgb, var(--color-primary-foreground) 10%, white);
+  border: 1px solid color-mix(in srgb, var(--color-primary-foreground) 20%, transparent);
+  color: var(--color-primary-foreground);
+  font-weight: 700;
+}
+
+.order-view__status--listo {
+  background: color-mix(in srgb, var(--color-success) 18%, white);
+  color: var(--color-success);
+}
+
+.order-view__status--pagado {
+  background: color-mix(in srgb, var(--color-success) 15%, white);
+  color: var(--color-success);
+}
+
+.order-view__status--cancelado {
+  background: color-mix(in srgb, var(--color-error) 12%, white);
+  color: var(--color-error);
+}
+
+.order-view__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(18rem, 0.9fr);
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.order-view__layout--readonly {
+  grid-template-columns: 1fr;
+  max-width: 36rem;
+}
+
+.order-view__catalog {
+  min-width: 0;
+  padding: 1rem;
+  border: 1.5px solid var(--color-secondary);
+  border-radius: 1rem;
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 15%);
+}
+
+.order-view__catalog-toolbar {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.order-view__search {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.625rem 0.875rem;
+  border: 1.5px solid var(--color-secondary);
+  border-radius: 0.75rem;
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+}
+
+.order-view__search input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: var(--color-primary-foreground);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.order-view__search input::placeholder {
+  color: color-mix(in srgb, var(--color-primary-foreground) 60%, transparent);
+}
+
+.order-view__search input:focus {
+  outline: none;
+}
+
+.order-view__categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.order-view__category {
+  padding: 0.4375rem 0.75rem;
+  border: 1px solid var(--color-secondary);
+  border-radius: 999px;
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.order-view__category--active {
+  border-color: var(--color-secondary);
+  background: var(--color-secondary);
+  color: var(--color-secondary-foreground);
+}
+
+.order-view__product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr));
+  gap: 0.75rem;
+  max-height: 32rem;
+  overflow-y: auto;
+  padding: 0.125rem 0.25rem 0.25rem 0;
+}
+
+.order-view__product-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  width: 100%;
+  min-width: 0;
+  min-height: 6.5rem;
+  padding: 0.875rem;
+  border: 1.5px solid var(--color-secondary);
+  border-radius: 0.875rem;
+  background: var(--color-primary);
+  box-sizing: border-box;
+  font: inherit;
+  color: var(--color-primary-foreground);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background-color 0.15s ease;
+}
+
+.order-view__product-card:hover:not(:disabled) {
+  border-color: var(--color-secondary);
+  background: color-mix(in srgb, var(--color-secondary) 15%, var(--color-primary));
+  box-shadow: 0 4px 14px rgb(249 170 11 / 25%);
+}
+
+.order-view__product-card:focus-visible {
+  outline: 2px solid var(--color-secondary);
+  outline-offset: 2px;
+}
+
+.order-view__product-card:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.order-view__product-name {
+  width: 100%;
+  min-width: 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-primary-foreground);
+  line-height: 1.3;
+}
+
+.order-view__product-category {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: color-mix(in srgb, var(--color-primary-foreground) 65%, transparent);
+}
+
+.order-view__product-price {
+  margin-top: auto;
+  width: 100%;
+  min-width: 0;
+  color: var(--color-primary-foreground);
+  font-weight: 700;
+}
+
+.order-view__product-price .multi-price {
+  width: 100%;
+}
+
+.order-view__product-price .multi-price__cop {
+  color: var(--color-primary-foreground);
+  font-weight: 700;
+}
+
+.order-view__product-price .multi-price__foreign {
+  white-space: normal;
+  flex-wrap: wrap;
+  color: color-mix(in srgb, var(--color-primary-foreground) 80%, transparent);
+}
+
+.order-view__stock-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
+  border-radius: 999px;
+  background: var(--color-secondary);
+  color: var(--color-secondary-foreground);
+  margin-top: 0.125rem;
+}
+
+.order-view__stock-badge--empty {
+  background: color-mix(in srgb, #ef4444 15%, var(--color-primary));
+  color: #ef4444;
+  border: 1px solid #ef4444;
+}
+
+.order-view__product-card--out-of-stock {
+  opacity: 0.55;
+  cursor: not-allowed !important;
+  border-style: dashed;
+}
+
+.order-view__product-card--out-of-stock:hover {
+  border-color: var(--color-secondary) !important;
+  background: var(--color-primary) !important;
+  box-shadow: none !important;
+}
+
+.order-view__field-hint {
+  font-size: 0.8125rem;
+  color: color-mix(in srgb, var(--color-primary-foreground) 70%, transparent);
+  margin-top: 0.25rem;
+  display: block;
+}
+
+.order-view__empty-catalog {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 2rem 1rem;
+  text-align: center;
+  color: var(--color-primary-foreground);
+  font-size: 0.875rem;
+}
+
+.order-view__ticket {
+  position: sticky;
+  top: 1rem;
+  display: flex;
+  flex-direction: column;
+  min-height: 24rem;
+  border: 1.5px solid var(--color-secondary);
+  border-radius: 1rem;
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 15%);
+  overflow: hidden;
+}
+
+.order-view__ticket-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1rem 0.75rem;
+  border-bottom: 1.5px solid var(--color-secondary);
+  background: var(--color-primary);
+}
+
+.order-view__ticket-title-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.order-view__ticket-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-primary-foreground);
+}
+
+.order-view__ticket-item-count {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.45rem;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  border-radius: 999px;
+  background: var(--color-secondary);
+  color: var(--color-secondary-foreground);
+  border: 1px solid var(--color-secondary);
+}
+
+.order-view__ticket-header-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.order-view__ticket-header span {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-primary-foreground);
+}
+
+/* Mobile-only elements hidden on desktop */
+.order-view__mobile-fab-container,
+.order-view__mobile-backdrop,
+.order-view__ticket-mobile-handle-bar,
+.order-view__ticket-header-close-icon,
+.order-view__mobile-keep-adding-btn {
+  display: none;
+}
+
+.order-view__empty-items {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1.25rem;
+  text-align: center;
+  color: var(--color-primary-foreground);
+  font-size: 0.875rem;
+  font-weight: 500;
+  line-height: 1.5;
+}
+
+.order-view__empty-items p {
+  margin: 0;
+}
+
+.order-view__items {
+  flex: 1;
+  list-style: none;
+  margin: 0;
+  padding: 0.75rem;
+  overflow-y: auto;
+  max-height: 24rem;
+  color: var(--color-primary-foreground);
+}
+
+.order-view__item {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--color-secondary) 40%, transparent);
+}
+
+.order-view__item:last-child {
+  border-bottom: none;
+}
+
+.order-view__item-main {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.order-view__item-name {
+  margin: 0 0 0.25rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-primary-foreground);
+}
+
+.order-view__item-notes {
+  margin: 0 0 0.25rem;
+  font-size: 0.75rem;
+  font-style: italic;
+  font-weight: 600;
+  color: var(--color-primary-foreground);
+}
+
+.order-view__item-extras {
+  margin: 0.2rem 0 0.25rem;
+  padding: 0;
+  list-style: none;
+}
+
+.order-view__item-extras li {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-primary-foreground);
+}
+
+.order-view__item-unit {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-primary-foreground);
+}
+
+.order-view__item-subtotal {
+  margin: 0;
+  flex-shrink: 0;
+  white-space: nowrap;
+  font-weight: 700;
+  color: var(--color-primary-foreground);
+}
+
+.order-view__item-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-top: 0.625rem;
+}
+
+.order-view__qty {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.25rem;
+  border: 1.5px solid var(--color-secondary);
+  border-radius: 0.625rem;
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+}
+
+.order-view__qty button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  border: none;
+  border-radius: 0.5rem;
+  background: var(--color-secondary);
+  color: var(--color-secondary-foreground);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.order-view__qty button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.order-view__qty span {
+  min-width: 1.25rem;
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-primary-foreground);
+}
+
+.order-view__remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid color-mix(in srgb, var(--color-error) 40%, var(--color-primary));
+  border-radius: 0.625rem;
+  background: color-mix(in srgb, var(--color-error) 15%, var(--color-primary));
+  color: var(--color-error);
+  cursor: pointer;
+}
+
+.order-view__remove:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.order-view__item-qty-readonly {
+  margin: 0.375rem 0 0;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-primary-foreground);
+}
+
+.order-view__footer {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  padding: 1rem;
+  border-top: 1.5px solid var(--color-secondary);
+  background: var(--color-primary);
+}
+
+.order-view__total {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.875rem;
+  font-size: 0.9375rem;
+  color: var(--color-primary-foreground);
+}
+
+.order-view__total strong {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--color-primary-foreground);
+}
+
+.order-view__send-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: none;
+  border-radius: 0.75rem;
+  background: var(--color-secondary);
+  color: var(--color-secondary-foreground);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.order-view__send-btn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.order-view__send-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.order-view__cancel-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-error);
+  border-radius: 0.75rem;
+  background: transparent;
+  color: var(--color-error);
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.order-view__cancel-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.order-view__deliver-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border: none;
+  border-radius: 0.75rem;
+  background: var(--color-success);
+  color: white;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.order-view__deliver-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.order-view__print-ticket-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1.5px solid var(--color-secondary);
+  border-radius: 0.75rem;
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.order-view__print-ticket-btn:hover {
+  background: var(--color-secondary);
+  color: var(--color-secondary-foreground);
+}
+
+.order-view__whatsapp-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: 0.75rem;
+  background: #25d366;
+  color: white;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.order-view__whatsapp-btn:hover {
+  background: #1ebe57;
+}
+
+.order-view__readonly-note--success {
+  color: var(--color-success);
+}
+
+.order-view__readonly-note {
+  margin: 0;
+  font-size: 0.8125rem;
+  line-height: 1.5;
+  text-align: center;
+  color: color-mix(in srgb, var(--color-primary-foreground) 75%, transparent);
+}
+
+.order-view__loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 3rem;
+  color: var(--color-primary-foreground);
+}
+
+.order-view__delivery-info {
+  margin-bottom: 1rem;
+  padding: 1rem;
+  border: 1.5px solid var(--color-secondary);
+  border-radius: 0.875rem;
+  background: var(--color-primary);
+}
+
+.order-view__delivery-info p {
+  margin: 0;
+  line-height: 1.5;
+  color: var(--color-primary-foreground);
+}
+
+.order-view__delivery-info p + p {
+  margin-top: 0.375rem;
+}
+
+.order-view__delivery-notes {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.order-view__delivery-timing {
+  margin-top: 0.5rem !important;
+  font-size: 0.8125rem;
+  color: var(--color-text-muted);
+}
+
+.order-view__hint {
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  background: var(--color-primary);
+  border: 1.5px solid var(--color-secondary);
+  color: var(--color-primary-foreground);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.order-view__pay-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  background: var(--color-secondary);
+  border: 1px solid var(--color-secondary);
+  color: var(--color-secondary-foreground);
+  font-weight: 700;
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+}
+
+.order-view__pay-link:hover {
+  opacity: 0.9;
+}
+
+.order-view__alert {
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--color-error) 10%, white);
+  border: 1px solid color-mix(in srgb, var(--color-error) 25%, white);
+  color: var(--color-error);
+  font-size: 0.875rem;
+}
+
+.order-view__modal-backdrop.ui-modal {
+  background: transparent;
+}
+
+.order-view__modal {
+  width: 100%;
+  max-width: 28rem;
+  border-radius: 1rem;
+  background: var(--color-primary);
+  border: 1.5px solid var(--color-secondary);
+  color: var(--color-primary-foreground);
+  box-shadow: 0 20px 40px rgb(0 0 0 / 25%);
+}
+
+.order-view__modal-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1.5px solid var(--color-secondary);
+  background: var(--color-primary);
+}
+
+.order-view__modal-header h3 {
+  margin: 0 0 0.25rem;
+  font-size: 1.0625rem;
+  font-weight: 700;
+  color: var(--color-primary-foreground);
+}
+
+.order-view__modal-header p {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-primary-foreground);
+}
+
+.order-view__icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  border: 1px solid var(--color-secondary);
+  border-radius: 0.5rem;
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.order-view__icon-btn:hover {
+  background: var(--color-secondary);
+  color: var(--color-secondary-foreground);
+}
+
+.order-view__modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+}
+
+.order-view__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--color-primary-foreground);
+}
+
+.order-view__field input {
+  padding: 0.625rem 0.75rem;
+  border: 1.5px solid var(--color-secondary);
+  border-radius: 0.625rem;
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.order-view__field input:focus {
+  outline: none;
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-secondary) 25%, transparent);
+}
+
+.order-view__note-options {
+  margin: 0;
+  padding: 0;
+  border: none;
+  min-width: 0;
+}
+
+.order-view__note-options legend {
+  padding: 0;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--color-primary-foreground);
+}
+
+.order-view__note-options-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.order-view__note-option {
+  padding: 0.45rem 0.8rem;
+  border: 1.5px solid var(--color-secondary);
+  border-radius: 999px;
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.order-view__note-option:hover {
+  background: color-mix(in srgb, var(--color-secondary) 18%, var(--color-primary));
+  border-color: var(--color-secondary);
+  color: var(--color-primary-foreground);
+}
+
+.order-view__note-option--selected {
+  border-color: var(--color-secondary);
+  background: var(--color-secondary);
+  color: var(--color-primary-foreground);
+  font-weight: 800;
+}
+
+.order-view__modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+}
+
+.order-view__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  border: none;
+  border-radius: 0.75rem;
+  background: var(--color-secondary);
+  color: var(--color-secondary-foreground);
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.order-view__btn--ghost {
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+  border: 1px solid var(--color-secondary);
+}
+
+.order-view__btn--ghost:hover {
+  background: color-mix(in srgb, var(--color-secondary) 15%, var(--color-primary));
+}
+
+.order-view__btn--danger {
+  background: var(--color-error);
+  color: white;
+}
+
+.order-view__modal .ui-modal__title-wrap p {
+  margin: 0.25rem 0 0;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-primary-foreground);
+}
+
+.order-view__modal--confirm .ui-modal__body > p {
+  font-weight: 500;
+  line-height: 1.5;
+  color: var(--color-primary-foreground);
+}
+
+.order-view__btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.order-view__spin {
+  animation: order-spin 0.8s linear infinite;
+}
+
+@keyframes order-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* DELIVERY FEE EDITING & STYLES */
+.order-view__delivery-fee-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin: 0.25rem 0;
+}
+
+.order-view__fee-edit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  border: 1px solid var(--color-secondary);
+  border-radius: 0.5rem;
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.order-view__fee-edit-btn:hover {
+  background: var(--color-secondary);
+  color: var(--color-secondary-foreground);
+}
+
+.order-view__fee-warning {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.625rem 0.875rem;
+  border-radius: 0.75rem;
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #f59e0b;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.order-view__fee-warning-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.5rem;
+  border: none;
+  border-radius: 0.375rem;
+  background: #f59e0b;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.order-view__fee-warning-btn:hover {
+  background: #d97706;
+}
+
+.order-view__fee-mini-edit {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.375rem;
+  border: 1px solid var(--color-secondary);
+  border-radius: 0.375rem;
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.order-view__fee-mini-edit:hover {
+  background: var(--color-secondary);
+  color: var(--color-secondary-foreground);
+}
+
+.order-view__fee-modal {
+  width: 100%;
+  max-width: 26rem;
+  border-radius: 1rem;
+  background: var(--color-primary);
+  border: 1.5px solid var(--color-secondary);
+  color: var(--color-primary-foreground);
+}
+
+.order-view__fee-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  padding: 1.25rem;
+}
+
+.order-view__fee-form-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.order-view__quick-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: -0.25rem;
+}
+
+.order-view__quick-chip {
+  padding: 0.375rem 0.625rem;
+  border: 1px solid var(--color-secondary);
+  border-radius: 999px;
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.order-view__quick-chip:hover {
+  background: color-mix(in srgb, var(--color-secondary) 20%, var(--color-primary));
+}
+
+.order-view__quick-chip--active {
+  border-color: var(--color-secondary);
+  background: var(--color-secondary);
+  color: var(--color-secondary-foreground);
+}
+
+.order-view__fee-preview-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--color-secondary) 15%, var(--color-primary));
+  border: 1.5px solid var(--color-secondary);
+  color: var(--color-primary-foreground);
+  font-size: 0.875rem;
+}
+
+.order-view__fee-preview-box strong {
+  font-size: 1.125rem;
+  color: var(--color-primary-foreground);
+}
+
+@media (max-width: 900px) {
+  .order-view__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .order-view__catalog {
+    padding-bottom: 6rem;
+  }
+
+  .order-view__product-grid {
+    max-height: none;
+  }
+
+  /* Mobile Backdrop */
+  .order-view__mobile-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.65);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 70;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+
+  .order-view__mobile-backdrop--open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Mobile Retractable Ticket Drawer (Bottom Sheet) */
+  .order-view__ticket {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    top: auto;
+    width: 100%;
+    max-width: 34rem;
+    margin: 0 auto;
+    max-height: 88vh;
+    max-height: 88dvh;
+    z-index: 80;
+    border-radius: 1.5rem 1.5rem 0 0;
+    border: 1.5px solid var(--color-secondary);
+    border-bottom: none;
+    background: var(--color-primary);
+    color: var(--color-primary-foreground);
+    box-shadow: 0 -12px 36px rgba(0, 0, 0, 0.45);
+    display: flex;
+    flex-direction: column;
+    transform: translateY(105%);
+    transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
+
+  .order-view__ticket--mobile-open {
+    transform: translateY(0);
+  }
+
+  /* When order is readonly (!isEditable), ticket stays in normal inline flow */
+  .order-view__layout--readonly .order-view__ticket {
+    position: static !important;
+    transform: none !important;
+    max-height: none !important;
+    box-shadow: none !important;
+    border-radius: 1rem !important;
+    border: 1.5px solid var(--color-secondary) !important;
+  }
+
+  .order-view__ticket-mobile-handle-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1.35rem 0.35rem;
+    background: var(--color-primary);
+    border-bottom: 1.5px solid var(--color-secondary);
+  }
+
+  .order-view__ticket-drag-pill {
+    width: 2.75rem;
+    height: 0.25rem;
+    border-radius: 999px;
+    background: var(--color-text-muted);
+    opacity: 0.35;
+    margin: 0 auto;
+    transform: translateX(1.5rem);
+  }
+
+  .order-view__ticket-mobile-close-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.3rem 0.75rem;
+    border-radius: 999px;
+    border: 1px solid var(--color-border);
+    background: color-mix(in srgb, var(--color-primary) 8%, var(--color-background));
+    color: var(--color-primary);
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .order-view__ticket .order-view__ticket-header {
+    padding: 0.875rem 1.35rem 0.75rem;
+  }
+
+  .order-view__ticket-header-close-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.125rem;
+    height: 2.125rem;
+    border-radius: 50%;
+    border: 1px solid var(--color-border);
+    background: var(--color-background);
+    color: var(--color-text);
+    cursor: pointer;
+    transition: background 0.15s ease;
+  }
+
+  .order-view__ticket-header-close-icon:active {
+    background: color-mix(in srgb, var(--color-primary) 12%, var(--color-background));
+  }
+
+  .order-view__ticket .order-view__empty-items {
+    padding: 2.5rem 1.35rem;
+  }
+
+  .order-view__ticket .order-view__items {
+    flex: 1 1 auto;
+    max-height: calc(88dvh - 17rem);
+    padding: 0.875rem 1.35rem;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .order-view__ticket .order-view__item {
+    padding: 0.875rem 0.25rem;
+  }
+
+  .order-view__ticket .order-view__item-main {
+    gap: 0.875rem;
+  }
+
+  .order-view__ticket .order-view__item-main > div {
+    min-width: 0;
+  }
+
+  .order-view__ticket .order-view__item-name {
+    word-break: break-word;
+  }
+
+  .order-view__ticket .order-view__item-subtotal {
+    min-width: fit-content;
+    text-align: right;
+  }
+
+  .order-view__ticket .order-view__footer {
+    padding: 1.125rem 1.35rem max(1.75rem, calc(1.25rem + env(safe-area-inset-bottom, 0px)));
+    gap: 0.75rem;
+  }
+
+  .order-view__ticket .order-view__total {
+    padding: 0 0.25rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .order-view__mobile-keep-adding-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border-radius: 0.75rem;
+    border: 1.5px solid var(--color-secondary);
+    background: var(--color-primary);
+    color: var(--color-primary-foreground);
+    font-size: 0.875rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    margin-top: 0.25rem;
+  }
+
+  .order-view__mobile-keep-adding-btn:active {
+    background: color-mix(in srgb, var(--color-secondary) 15%, var(--color-primary));
+  }
+
+  /* Floating Action Button (FAB) */
+  .order-view__mobile-fab-container {
+    display: block;
+    position: fixed;
+    bottom: max(1.25rem, calc(1rem + env(safe-area-inset-bottom, 0px)));
+    left: 1rem;
+    right: 1rem;
+    z-index: 60;
+    pointer-events: none;
+  }
+
+  .order-view__mobile-fab {
+    pointer-events: auto;
+    width: 100%;
+    max-width: 32rem;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.75rem 1.15rem 0.75rem 0.85rem;
+    background: var(--color-primary-foreground);
+    color: var(--color-primary);
+    border: 1.5px solid var(--color-secondary);
+    border-radius: 999px;
+    box-shadow:
+      0 12px 30px -4px rgba(0, 0, 0, 0.6),
+      0 4px 14px color-mix(in srgb, var(--color-secondary) 25%, transparent);
+    cursor: pointer;
+    transition:
+      transform 0.22s cubic-bezier(0.34, 1.56, 0.64, 1),
+      box-shadow 0.2s ease,
+      background 0.2s ease,
+      border-color 0.2s ease;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .order-view__mobile-fab:active {
+    transform: scale(0.97);
+  }
+
+  .order-view__mobile-fab--pulse {
+    animation: fabComandaPulse 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+
+  @keyframes fabComandaPulse {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.06); }
+    100% { transform: scale(1); }
+  }
+
+  .order-view__mobile-fab-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+  }
+
+  .order-view__mobile-fab-icon-wrap {
+    position: relative;
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--color-secondary) 18%, transparent);
+    color: var(--color-secondary);
+    border: 1px solid color-mix(in srgb, var(--color-secondary) 35%, transparent);
+    flex-shrink: 0;
+  }
+
+  .order-view__mobile-fab-badge {
+    position: absolute;
+    top: -0.25rem;
+    right: -0.25rem;
+    min-width: 1.25rem;
+    height: 1.25rem;
+    padding: 0 0.3rem;
+    border-radius: 999px;
+    background: var(--color-secondary);
+    color: var(--color-secondary-foreground, var(--color-primary-foreground));
+    font-size: 0.72rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--color-primary-foreground);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.35);
+  }
+
+  .order-view__mobile-fab-info {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    line-height: 1.2;
+    min-width: 0;
+  }
+
+  .order-view__mobile-fab-label {
+    font-size: 0.9375rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: var(--color-primary);
+    white-space: nowrap;
+  }
+
+  .order-view__mobile-fab-sub {
+    font-size: 0.75rem;
+    color: color-mix(in srgb, var(--color-primary) 75%, transparent);
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .order-view__mobile-fab-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-shrink: 0;
+  }
+
+  .order-view__mobile-fab-total {
+    padding: 0.35rem 0.7rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-secondary) 18%, transparent);
+    font-size: 0.875rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: var(--color-secondary);
+    white-space: nowrap;
+    border: 1px solid color-mix(in srgb, var(--color-secondary) 35%, transparent);
+  }
+
+  .order-view__mobile-fab-chevron {
+    display: flex;
+    align-items: center;
+    color: var(--color-secondary);
+  }
+}
+
+/* FLAVORS STYLING IN COMANDAS */
+.order-view__item-flavors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0.3rem 0;
+}
+
+.order-view__flavor-tag {
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: color-mix(in srgb, var(--color-secondary) 18%, var(--color-primary));
+  border: 1px solid var(--color-secondary);
+  color: var(--color-primary-foreground);
+  padding: 0.15rem 0.5rem;
+  border-radius: 0.4rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.order-view__flavor-tag strong {
+  color: var(--color-primary-foreground);
+  font-weight: 800;
+}
+
+.order-view__flavors-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-bottom: 0.5rem;
+  color: var(--color-primary-foreground);
+}
+
+/* ==========================================================================
+   ENFORZAR TODOS LOS TEXTOS DE LA COMANDA Y PRECIOS EN PRIMARY FOREGROUND
+   ========================================================================== */
+.order-view,
+.order-view__ticket,
+.order-view__catalog,
+.order-view__modal {
+  color: var(--color-primary-foreground);
+}
+
+/* Precios en todo el flujo de comanda */
+.order-view .multi-price,
+.order-view .multi-price__cop,
+.order-view .multi-price__foreign,
+.order-view .multi-price__foreign span,
+.order-view__ticket .multi-price,
+.order-view__ticket .multi-price__cop,
+.order-view__ticket .multi-price__foreign,
+.order-view__ticket .multi-price__foreign span,
+.order-view__total,
+.order-view__total *,
+.order-view__total span,
+.order-view__total strong,
+.order-view__total .multi-price__cop,
+.order-view__item-subtotal,
+.order-view__item-subtotal *,
+.order-view__item-subtotal .multi-price__cop,
+.order-view__item-unit,
+.order-view__item-unit *,
+.order-view__item-unit .multi-price__cop,
+.order-view__modal .multi-price,
+.order-view__modal .multi-price__cop,
+.order-view__modal .multi-price__foreign,
+.order-view__modal .ui-modal__title-wrap p,
+.order-view__modal .ui-modal__title-wrap p * {
+  color: var(--color-primary-foreground) !important;
+}
+
+/* Todos los textos del ticket de comanda */
+.order-view__ticket h3,
+.order-view__ticket p,
+.order-view__ticket span,
+.order-view__ticket li,
+.order-view__ticket strong,
+.order-view__ticket .order-view__item-name,
+.order-view__ticket .order-view__item-notes,
+.order-view__ticket .order-view__item-extras,
+.order-view__ticket .order-view__item-extras li,
+.order-view__ticket .order-view__flavor-tag,
+.order-view__ticket .order-view__flavor-tag strong,
+.order-view__ticket .order-view__item-qty-readonly,
+.order-view__ticket .order-view__empty-items,
+.order-view__ticket .order-view__empty-items p {
+  color: var(--color-primary-foreground) !important;
+}
+
+/* Modal de agregar producto: textos, labels, chips */
+.order-view__modal label,
+.order-view__modal legend,
+.order-view__modal span,
+.order-view__modal strong,
+.order-view__modal p,
+.order-view__modal .order-view__note-options legend,
+.order-view__modal .order-view__note-option,
+.order-view__modal .order-view__note-option--selected {
+  color: var(--color-primary-foreground) !important;
+}
+
+/* Botones específicos que mantienen su color de contraste correspondiente */
+.order-view .order-view__send-btn,
+.order-view .order-view__send-btn * {
+  color: var(--color-secondary-foreground) !important;
+}
+
+.order-view .order-view__deliver-btn,
+.order-view .order-view__deliver-btn *,
+.order-view .order-view__whatsapp-btn,
+.order-view .order-view__whatsapp-btn * {
+  color: #ffffff !important;
+}
+
+.order-view .order-view__cancel-btn {
+  color: var(--color-error) !important;
+}
+
+.order-view .order-view__remove {
+  color: var(--color-error) !important;
+}
+
+.order-view .order-view__qty button {
+  color: var(--color-secondary-foreground) !important;
+}
+
+.order-view .order-view__ticket-item-count {
+  color: var(--color-secondary-foreground) !important;
+}
+
+

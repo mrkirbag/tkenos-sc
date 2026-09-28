@@ -1,0 +1,132 @@
+import { brand } from '@/data/brand';
+import type { OrderItemWithProduct } from '@/lib/db/orders';
+import type { Order, OrderPayment } from '@/lib/db/types';
+import { formatOrderLabel } from '@/lib/orders/display';
+import { formatExtraLine } from '@/lib/orders/item-extras';
+import { getItemPreferenceLabel } from '@/lib/orders/item-preferences';
+import { formatOrderPaymentLine } from '@/lib/payments/display';
+import { formatCop } from '@/lib/utils/currency';
+
+import './SaleTicket.css';
+
+export type SaleTicketProps = {
+  order: Order;
+  items: OrderItemWithProduct[];
+  tableNumber?: string | null;
+  cashierUsername?: string;
+  payments?: OrderPayment[];
+  paymentPreview?: string;
+  ticketId?: string;
+};
+
+function formatTicketDateTime(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+
+  return new Intl.DateTimeFormat(brand.locale, {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date);
+}
+
+export default function SaleTicket({
+  order,
+  items,
+  tableNumber,
+  cashierUsername,
+  payments = [],
+  paymentPreview,
+  ticketId = 'sale-ticket',
+}: SaleTicketProps) {
+  const paymentText =
+    payments.length > 0
+      ? payments.map((payment) => formatOrderPaymentLine(payment)).join(' · ')
+      : paymentPreview ?? '—';
+
+  return (
+    <article className="sale-ticket" id={ticketId} aria-label="Ticket de venta">
+      <header className="sale-ticket__header">
+        <p className="sale-ticket__brand">{brand.name}</p>
+        {brand.contact.address && <p>{brand.contact.address}</p>}
+        {brand.contact.phone && <p>{brand.contact.phone}</p>}
+        {brand.contact.instagram && <p>{brand.contact.instagram}</p>}
+      </header>
+
+      <div className="sale-ticket__divider" />
+
+      <section className="sale-ticket__meta">
+        <p className="sale-ticket__order-label">
+          {formatOrderLabel({ ...order, table_number: tableNumber ?? null })}
+        </p>
+        <p>#{order.id.slice(0, 8).toUpperCase()}</p>
+        <p>{formatTicketDateTime(order.updated_at)}</p>
+        {cashierUsername && <p>Cajero: {cashierUsername}</p>}
+        {order.order_type === 'delivery' && order.delivery_address && (
+          <p>Dir: {order.delivery_address}</p>
+        )}
+        {order.order_type === 'para_llevar' && <p>Modalidad: PARA LLEVAR</p>}
+      </section>
+
+      <div className="sale-ticket__divider" />
+
+      <section className="sale-ticket__items">
+        {items.map((item) => {
+          const preferences = getItemPreferenceLabel(item);
+
+          return (
+            <div key={item.id} className="sale-ticket__item">
+              <div className="sale-ticket__line">
+                <span>
+                  {item.quantity} {item.product_name}
+                </span>
+                <span>{formatCop(item.quantity * item.price_at_sale)}</span>
+              </div>
+              {item.flavors?.map((flavor, fIdx) => (
+                <p key={fIdx} className="sale-ticket__item-notes">
+                  • {flavor.groupName}: {flavor.optionName}
+                </p>
+              ))}
+              {preferences && <p className="sale-ticket__item-notes">* {preferences}</p>}
+              {item.extras?.map((extra) => (
+                <p key={extra.product_id} className="sale-ticket__item-notes">
+                  {formatExtraLine(extra)}
+                </p>
+              ))}
+            </div>
+          );
+        })}
+      </section>
+
+      <div className="sale-ticket__divider" />
+
+      {order.delivery_fee > 0 ? (
+        <>
+          <div className="sale-ticket__line">
+            <span>SUBTOTAL</span>
+            <span>{formatCop(order.total - order.delivery_fee)}</span>
+          </div>
+          <div className="sale-ticket__line">
+            <span>DOMICILIO</span>
+            <span>{formatCop(order.delivery_fee)}</span>
+          </div>
+          <div className="sale-ticket__line sale-ticket__total">
+            <span>TOTAL</span>
+            <span>{formatCop(order.total)}</span>
+          </div>
+        </>
+      ) : (
+        <div className="sale-ticket__line sale-ticket__total">
+          <span>TOTAL</span>
+          <span>{formatCop(order.total)}</span>
+        </div>
+      )}
+
+      <p className="sale-ticket__payment">{paymentText}</p>
+
+      <p className="sale-ticket__footer">{brand.ticket.footer}</p>
+    </article>
+  );
+}

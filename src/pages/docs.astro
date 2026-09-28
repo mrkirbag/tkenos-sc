@@ -1,0 +1,635 @@
+---
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { marked } from 'marked';
+import { brand, brandCssVariablesStyle } from '@/data/brand';
+
+// Leer el manual desde la raíz del proyecto
+const manualPath = join(process.cwd(), 'MANUAL_DE_USUARIO.md');
+const rawMarkdown = readFileSync(manualPath, 'utf-8');
+
+// Configurar marked para generar IDs en los encabezados
+marked.use({
+  renderer: {
+    heading({ text, depth }: { text: string; depth: number }) {
+      const id = text
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9\s-]/g, '')
+        .trim()
+        .replace(/\s+/g, '-');
+      return `<h${depth} id="${id}">${text}</h${depth}>`;
+    },
+  },
+});
+
+const htmlContent = await marked.parse(rawMarkdown);
+
+const session = Astro.locals.session;
+const isLoggedIn = !!session;
+---
+
+<!doctype html>
+<html lang={brand.locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Manual de Usuario | {brand.name}</title>
+    <meta name="description" content="Manual de uso del panel de gestión de TKEÑOS.SC. Guía completa para el personal del local." />
+    <link rel="icon" type="image/png" href={brand.assets.favicon} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400;0,14..32,500;0,14..32,600;0,14..32,700;1,14..32,400&display=swap"
+      rel="stylesheet"
+    />
+    <style is:global set:html={brandCssVariablesStyle()}></style>
+  </head>
+
+  <body>
+    <!-- Top Bar -->
+    <header class="docs-topbar">
+      <div class="docs-topbar__inner">
+        <a href="/" class="docs-topbar__brand">
+          <img src={brand.assets.logo} alt={brand.name} class="docs-topbar__logo" />
+          <span class="docs-topbar__name">{brand.shortName}</span>
+        </a>
+
+        <div class="docs-topbar__center">
+          <span class="docs-topbar__badge">📋 Manual de Usuario</span>
+        </div>
+
+        <nav class="docs-topbar__nav">
+          {isLoggedIn ? (
+            <a href="/panel" class="docs-topbar__btn docs-topbar__btn--primary">
+              ← Volver al Panel
+            </a>
+          ) : (
+            <a href="/login" class="docs-topbar__btn docs-topbar__btn--primary">
+              Iniciar sesión
+            </a>
+          )}
+        </nav>
+      </div>
+    </header>
+
+    <div class="docs-layout">
+      <!-- Sidebar TOC -->
+      <aside class="docs-sidebar" id="docs-sidebar">
+        <div class="docs-sidebar__inner">
+          <p class="docs-sidebar__label">En esta página</p>
+          <nav class="docs-toc" id="docs-toc" aria-label="Tabla de contenidos">
+            <!-- Generado por JS -->
+          </nav>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="docs-main">
+        <article class="docs-article markdown-body" set:html={htmlContent} />
+
+        <footer class="docs-footer">
+          <p>Manual elaborado para el equipo de <strong>{brand.name}</strong> · Versión 1.0</p>
+          {isLoggedIn && (
+            <a href="/panel" class="docs-footer__link">← Volver al Panel</a>
+          )}
+        </footer>
+      </main>
+    </div>
+
+    <!-- Toggle móvil del sidebar -->
+    <button class="docs-fab" id="docs-fab-toc" aria-label="Ver tabla de contenidos" title="Tabla de contenidos">
+      ☰
+    </button>
+
+    <script>
+      function buildToc() {
+        const article = document.querySelector('.docs-article');
+        const toc = document.getElementById('docs-toc');
+        if (!article || !toc) return;
+
+        const headings = Array.from(article.querySelectorAll('h2, h3'));
+        if (headings.length === 0) return;
+
+        const ul = document.createElement('ul');
+        ul.className = 'docs-toc__list';
+
+        headings.forEach((heading) => {
+          const li = document.createElement('li');
+          li.className = `docs-toc__item docs-toc__item--${heading.tagName.toLowerCase()}`;
+
+          const a = document.createElement('a');
+          a.href = `#${heading.id}`;
+          a.textContent = heading.textContent ?? '';
+          a.className = 'docs-toc__link';
+
+          a.addEventListener('click', () => {
+            document.getElementById('docs-sidebar')?.classList.remove('docs-sidebar--open');
+          });
+
+          li.appendChild(a);
+          ul.appendChild(li);
+        });
+
+        toc.appendChild(ul);
+      }
+
+      function setupScrollSpy() {
+        const links = document.querySelectorAll<HTMLAnchorElement>('.docs-toc__link');
+        const headings = Array.from(
+          document.querySelectorAll<HTMLElement>('.docs-article h2, .docs-article h3')
+        );
+
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (entry.isIntersecting) {
+                links.forEach((link) => link.classList.remove('docs-toc__link--active'));
+                const activeLink = document.querySelector<HTMLAnchorElement>(
+                  `.docs-toc__link[href="#${entry.target.id}"]`
+                );
+                activeLink?.classList.add('docs-toc__link--active');
+              }
+            });
+          },
+          { rootMargin: '-60px 0px -70% 0px', threshold: 0 }
+        );
+
+        headings.forEach((h) => observer.observe(h));
+      }
+
+      function setupMobileToggle() {
+        const fab = document.getElementById('docs-fab-toc');
+        const sidebar = document.getElementById('docs-sidebar');
+        fab?.addEventListener('click', () => {
+          sidebar?.classList.toggle('docs-sidebar--open');
+        });
+
+        document.addEventListener('click', (e) => {
+          if (
+            sidebar?.classList.contains('docs-sidebar--open') &&
+            !sidebar.contains(e.target as Node) &&
+            e.target !== fab
+          ) {
+            sidebar.classList.remove('docs-sidebar--open');
+          }
+        });
+      }
+
+      buildToc();
+      setupScrollSpy();
+      setupMobileToggle();
+    </script>
+
+    <style>
+      /* ── TOKENS ─────────────────────────────── */
+      :root {
+        --d-bg:            #ffffff;
+        --d-bg-soft:       #f8f8f6;
+        --d-bg-muted:      #f1f0ec;
+        --d-border:        #e3e2dd;
+        --d-text:          #1a1a1a;
+        --d-text-2:        #4a4a4a;
+        --d-text-3:        #767676;
+        --d-accent:        #f9aa0b;
+        --d-accent-bg:     #fff8e6;
+        --d-accent-border: #f9aa0b66;
+        --d-link:          #c47d00;
+      }
+
+      /* ── RESET ──────────────────────────────── */
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      body {
+        font-family: 'Inter', system-ui, sans-serif;
+        background: var(--d-bg);
+        color: var(--d-text);
+        min-height: 100vh;
+        line-height: 1.6;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* ── TOP BAR ────────────────────────────── */
+      .docs-topbar {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        background: #ffffff;
+        border-bottom: 1px solid var(--d-border);
+        box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+      }
+
+      .docs-topbar__inner {
+        max-width: 1400px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.75rem 1.5rem;
+      }
+
+      .docs-topbar__brand {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        text-decoration: none;
+        flex-shrink: 0;
+      }
+
+      .docs-topbar__logo {
+        height: 2rem;
+        width: auto;
+        object-fit: contain;
+      }
+
+      .docs-topbar__name {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--d-text);
+        letter-spacing: 0.04em;
+      }
+
+      .docs-topbar__center {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+      }
+
+      .docs-topbar__badge {
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: #7a5500;
+        background: var(--d-accent-bg);
+        border: 1px solid var(--d-accent-border);
+        border-radius: 999px;
+        padding: 0.3rem 0.9rem;
+        letter-spacing: 0.02em;
+      }
+
+      .docs-topbar__nav { flex-shrink: 0; }
+
+      .docs-topbar__btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        padding: 0.45rem 1rem;
+        border-radius: 8px;
+        text-decoration: none;
+        transition: all 0.18s ease;
+      }
+
+      .docs-topbar__btn--primary {
+        background: var(--d-accent);
+        color: #1a1a1a;
+      }
+
+      .docs-topbar__btn--primary:hover {
+        background: #e89b00;
+        transform: translateY(-1px);
+      }
+
+      /* ── LAYOUT ─────────────────────────────── */
+      .docs-layout {
+        display: flex;
+        max-width: 1400px;
+        margin: 0 auto;
+        min-height: calc(100vh - 57px);
+      }
+
+      /* ── SIDEBAR ────────────────────────────── */
+      .docs-sidebar {
+        width: 260px;
+        flex-shrink: 0;
+        position: sticky;
+        top: 57px;
+        height: calc(100vh - 57px);
+        overflow-y: auto;
+        border-right: 1px solid var(--d-border);
+        background: var(--d-bg-soft);
+        scrollbar-width: thin;
+        scrollbar-color: var(--d-border) transparent;
+      }
+
+      .docs-sidebar__inner { padding: 1.5rem 1rem; }
+
+      .docs-sidebar__label {
+        font-size: 0.6875rem;
+        font-weight: 700;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--d-text-3);
+        margin-bottom: 0.75rem;
+        padding-left: 0.5rem;
+      }
+
+      .docs-toc__list {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 0.1rem;
+      }
+
+      .docs-toc__item--h2 { padding-left: 0; }
+      .docs-toc__item--h3 { padding-left: 1rem; }
+
+      .docs-toc__link {
+        display: block;
+        font-size: 0.8125rem;
+        color: var(--d-text-2);
+        text-decoration: none;
+        padding: 0.3rem 0.5rem;
+        border-radius: 6px;
+        border-left: 2px solid transparent;
+        transition: all 0.15s ease;
+        line-height: 1.35;
+      }
+
+      .docs-toc__item--h2 .docs-toc__link { font-weight: 500; }
+      .docs-toc__item--h3 .docs-toc__link { font-size: 0.75rem; font-weight: 400; }
+
+      .docs-toc__link:hover {
+        color: var(--d-text);
+        background: var(--d-accent-bg);
+        border-left-color: var(--d-accent);
+      }
+
+      .docs-toc__link--active {
+        color: #7a5500 !important;
+        background: var(--d-accent-bg);
+        border-left-color: var(--d-accent);
+        font-weight: 600;
+      }
+
+      /* ── MAIN ───────────────────────────────── */
+      .docs-main {
+        flex: 1;
+        min-width: 0;
+        padding: 2.5rem 3rem;
+        background: var(--d-bg);
+      }
+
+      /* ── MARKDOWN ───────────────────────────── */
+      .markdown-body { max-width: 780px; margin: 0 auto; }
+
+      .markdown-body h1 {
+        font-size: clamp(1.75rem, 3vw, 2.4rem);
+        font-weight: 800;
+        letter-spacing: -0.03em;
+        color: var(--d-text);
+        margin-bottom: 0.4rem;
+        line-height: 1.15;
+        border-bottom: 2px solid var(--d-accent);
+        padding-bottom: 0.75rem;
+      }
+
+      .markdown-body > p:first-of-type {
+        font-size: 0.9375rem;
+        color: var(--d-text-2);
+        margin-bottom: 2rem;
+        font-style: italic;
+        background: var(--d-accent-bg);
+        border: 1px solid var(--d-accent-border);
+        border-radius: 10px;
+        padding: 0.85rem 1.25rem;
+      }
+
+      .markdown-body hr {
+        border: none;
+        border-top: 1px solid var(--d-border);
+        margin: 2.5rem 0;
+      }
+
+      .markdown-body h2 {
+        font-size: 1.375rem;
+        font-weight: 700;
+        color: var(--d-text);
+        margin-top: 2.75rem;
+        margin-bottom: 0.75rem;
+        letter-spacing: -0.02em;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        scroll-margin-top: 75px;
+      }
+
+      .markdown-body h2::before {
+        content: '';
+        display: inline-block;
+        width: 3px;
+        height: 1.2em;
+        background: var(--d-accent);
+        border-radius: 99px;
+        flex-shrink: 0;
+      }
+
+      .markdown-body h3 {
+        font-size: 1.0625rem;
+        font-weight: 600;
+        color: var(--d-text);
+        margin-top: 1.75rem;
+        margin-bottom: 0.5rem;
+        letter-spacing: -0.01em;
+        scroll-margin-top: 75px;
+      }
+
+      .markdown-body h4 {
+        font-size: 0.9375rem;
+        font-weight: 600;
+        color: var(--d-text-2);
+        margin-top: 1.25rem;
+        margin-bottom: 0.4rem;
+      }
+
+      .markdown-body p {
+        font-size: 0.9375rem;
+        color: var(--d-text-2);
+        margin-bottom: 0.9rem;
+        line-height: 1.7;
+      }
+
+      .markdown-body ul,
+      .markdown-body ol {
+        padding-left: 1.5rem;
+        margin-bottom: 1rem;
+      }
+
+      .markdown-body li {
+        font-size: 0.9375rem;
+        color: var(--d-text-2);
+        margin-bottom: 0.35rem;
+        line-height: 1.65;
+      }
+
+      .markdown-body li::marker { color: var(--d-accent); }
+
+      .markdown-body strong { color: var(--d-text); font-weight: 600; }
+
+      .markdown-body em { color: var(--d-text-3); font-style: italic; }
+
+      .markdown-body code {
+        font-family: 'JetBrains Mono', 'Fira Code', 'Consolas', monospace;
+        font-size: 0.82em;
+        background: var(--d-accent-bg);
+        color: #7a5500;
+        border: 1px solid var(--d-accent-border);
+        border-radius: 5px;
+        padding: 0.15em 0.45em;
+      }
+
+      .markdown-body pre {
+        background: var(--d-bg-muted);
+        border: 1px solid var(--d-border);
+        border-radius: 10px;
+        padding: 1.25rem 1.5rem;
+        overflow-x: auto;
+        margin-bottom: 1.25rem;
+        font-size: 0.875rem;
+        line-height: 1.6;
+      }
+
+      .markdown-body pre code {
+        background: none;
+        border: none;
+        padding: 0;
+        color: var(--d-text);
+        font-size: inherit;
+      }
+
+      /* Tablas */
+      .markdown-body table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 1.5rem;
+        font-size: 0.9rem;
+        border-radius: 10px;
+        overflow: hidden;
+        border: 1px solid var(--d-border);
+      }
+
+      .markdown-body thead { background: var(--d-accent-bg); }
+
+      .markdown-body th {
+        text-align: left;
+        padding: 0.7rem 1rem;
+        font-weight: 700;
+        font-size: 0.8125rem;
+        letter-spacing: 0.03em;
+        color: #7a5500;
+        border-bottom: 1px solid var(--d-border);
+      }
+
+      .markdown-body td {
+        padding: 0.65rem 1rem;
+        border-bottom: 1px solid var(--d-border);
+        color: var(--d-text-2);
+        vertical-align: top;
+      }
+
+      .markdown-body tr:last-child td { border-bottom: none; }
+
+      .markdown-body tr:nth-child(even) td { background: var(--d-bg-soft); }
+
+      /* Blockquotes */
+      .markdown-body blockquote {
+        border-left: 3px solid var(--d-accent);
+        margin: 1.25rem 0;
+        padding: 0.75rem 1.25rem;
+        background: var(--d-accent-bg);
+        border-radius: 0 10px 10px 0;
+      }
+
+      .markdown-body blockquote p {
+        margin: 0;
+        font-size: 0.9rem;
+        color: #5a4000;
+      }
+
+      .markdown-body a {
+        color: var(--d-link);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        transition: opacity 0.15s;
+      }
+
+      .markdown-body a:hover { opacity: 0.75; }
+
+      /* ── FOOTER ─────────────────────────────── */
+      .docs-footer {
+        max-width: 780px;
+        margin: 3rem auto 0;
+        padding-top: 2rem;
+        border-top: 1px solid var(--d-border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+        flex-wrap: wrap;
+      }
+
+      .docs-footer p { font-size: 0.8125rem; color: var(--d-text-3); }
+
+      .docs-footer__link {
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: var(--d-link);
+        text-decoration: none;
+        transition: opacity 0.15s;
+      }
+
+      .docs-footer__link:hover { opacity: 0.75; }
+
+      /* ── FAB MÓVIL ──────────────────────────── */
+      .docs-fab {
+        display: none;
+        position: fixed;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        z-index: 60;
+        width: 3rem;
+        height: 3rem;
+        border-radius: 50%;
+        background: var(--d-accent);
+        color: #1a1a1a;
+        font-size: 1.1rem;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.18);
+        transition: transform 0.2s ease;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .docs-fab:hover { transform: scale(1.08); }
+
+      /* ── RESPONSIVE ─────────────────────────── */
+      @media (max-width: 1024px) {
+        .docs-sidebar {
+          display: none;
+          position: fixed;
+          top: 57px;
+          left: 0;
+          height: calc(100vh - 57px);
+          z-index: 40;
+          background: #ffffff;
+          box-shadow: 4px 0 24px rgba(0,0,0,0.12);
+        }
+
+        .docs-sidebar--open { display: block; }
+        .docs-main { padding: 1.5rem 1.25rem; }
+        .docs-fab { display: flex; }
+      }
+
+      @media (max-width: 640px) {
+        .docs-topbar__center { display: none; }
+        .docs-main { padding: 1.25rem 1rem; }
+        .docs-topbar__inner { padding: 0.65rem 1rem; }
+        .markdown-body table { font-size: 0.8125rem; }
+        .markdown-body th, .markdown-body td { padding: 0.5rem 0.65rem; }
+      }
+    </style>
+  </body>
+</html>

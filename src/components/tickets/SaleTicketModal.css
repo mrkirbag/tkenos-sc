@@ -1,0 +1,146 @@
+.sale-ticket-modal__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgb(0 0 0 / 45%);
+}
+
+.sale-ticket-modal {
+  width: min(100%, 24rem);
+  max-height: calc(100vh - 2rem);
+  display: flex;
+  flex-direction: column;
+  border-radius: 1rem;
+  background: var(--color-primary);
+  border: 1.5px solid var(--color-secondary);
+  color: var(--color-primary-foreground);
+  box-shadow: 0 20px 50px rgb(0 0 0 / 25%);
+  overflow: hidden;
+}
+
+.sale-ticket-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1.5px solid var(--color-secondary);
+  background: var(--color-primary);
+}
+
+.sale-ticket-modal__eyebrow {
+  margin: 0 0 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--color-secondary);
+}
+
+.sale-ticket-modal__header h3 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--color-primary-foreground);
+}
+
+.sale-ticket-modal__close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--color-primary-foreground);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sale-ticket-modal__close:hover {
+  background: color-mix(in srgb, var(--color-secondary) 25%, transparent);
+}
+
+.sale-ticket-modal__preview {
+  flex: 1;
+  overflow: auto;
+  padding: 1.25rem;
+  background: color-mix(in srgb, var(--color-secondary) 10%, var(--color-primary));
+}
+
+.sale-ticket-modal__footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-top: 1.5px solid var(--color-secondary);
+  background: var(--color-primary);
+}
+
+.sale-ticket-modal__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1rem;
+  border-radius: 0.625rem;
+  border: 1px solid transparent;
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.sale-ticket-modal__btn--ghost {
+  border-color: var(--color-secondary);
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+}
+
+.sale-ticket-modal__btn--ghost:hover {
+  background: color-mix(in srgb, var(--color-secondary) 15%, var(--color-primary));
+}
+
+.sale-ticket-modal__btn--primary {
+  background: var(--color-secondary);
+  color: var(--color-secondary-foreground);
+  font-weight: 700;
+}
+
+.sale-ticket-modal__btn--primary:hover {
+  opacity: 0.9;
+}
+
+@media print {
+  .sale-ticket-modal__overlay {
+    position: static;
+    padding: 0;
+    background: transparent;
+  }
+
+  .sale-ticket-modal__header,
+  .sale-ticket-modal__footer {
+    display: none !important;
+  }
+
+  .sale-ticket-modal {
+    width: auto;
+    max-height: none;
+    border-radius: 0;
+    box-shadow: none;
+    background: transparent;
+    overflow: visible;
+  }
+
+  .sale-ticket-modal__preview {
+    padding: 0;
+    background: transparent;
+    overflow: visible;
+  }
+}

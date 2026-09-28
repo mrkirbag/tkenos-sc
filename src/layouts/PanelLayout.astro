@@ -1,0 +1,144 @@
+---
+import Navbar from "@/components/layout/Navbar";
+import { brand, brandCssVariablesStyle } from "@/data/brand";
+import "@/styles/global.css";
+
+interface Props {
+  title?: string;
+}
+
+const { title = `Panel | ${brand.name}` } = Astro.props;
+const session = Astro.locals.session!;
+const currentPath = Astro.url.pathname;
+---
+
+<!doctype html>
+<html lang={brand.locale}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script is:inline>
+      // 1. Silencia errores no controlados inyectados por extensiones del navegador
+      // (p. ej. Urban VPN Proxy con 200.js / 'M_ID') para evitar alertas falsas en consola.
+      const isExtensionNoise = (err) => {
+        const msg = typeof err === "string" ? err : err?.message || "";
+        const stack = err?.stack || "";
+        return (
+          msg.includes("reading 'M_ID'") ||
+          msg.includes("M_ID") ||
+          stack.includes("200.js")
+        );
+      };
+
+      window.addEventListener("unhandledrejection", (event) => {
+        if (isExtensionNoise(event.reason)) {
+          event.preventDefault();
+        }
+      });
+
+      window.addEventListener("error", (event) => {
+        if (
+          isExtensionNoise(event.error) ||
+          event.filename?.includes("200.js")
+        ) {
+          event.preventDefault();
+        }
+      });
+
+      // 2. Elimina atributos inyectados por extensiones del navegador
+      // (p. ej. Bitdefender) antes de que React hidrate, para evitar
+      // falsos positivos de "hydration mismatch".
+      (() => {
+        const ATTR = "bis_skin_checked";
+
+        const strip = (node) => {
+          if (!node || node.nodeType !== 1) return;
+          node.removeAttribute(ATTR);
+        };
+
+        document.querySelectorAll(`[${ATTR}]`).forEach(strip);
+
+        const observer = new MutationObserver((mutations) => {
+          for (const mutation of mutations) {
+            if (
+              mutation.type === "attributes" &&
+              mutation.attributeName === ATTR
+            ) {
+              strip(mutation.target);
+            } else if (mutation.type === "childList") {
+              mutation.addedNodes.forEach((node) => {
+                if (node.nodeType === 1) {
+                  strip(node);
+                  node.querySelectorAll?.(`[${ATTR}]`).forEach(strip);
+                }
+              });
+            }
+          }
+        });
+
+        observer.observe(document.documentElement, {
+          attributes: true,
+          childList: true,
+          subtree: true,
+        });
+      })();
+    </script>
+    <link rel="icon" type="image/webp" href={brand.assets.favicon} />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <title>{title}</title>
+    <style is:global set:html={brandCssVariablesStyle()}></style>
+  </head>
+  <body>
+    <div class="panel-layout">
+      <Navbar
+        client:load
+        currentPath={currentPath}
+        username={session.username}
+        role={session.role}
+      />
+
+      <div class="panel-layout__content">
+        <main class="panel-layout__main">
+          <slot />
+        </main>
+      </div>
+    </div>
+  </body>
+</html>
+
+<style>
+  .panel-layout {
+    min-height: 100vh;
+    min-height: 100dvh;
+    background: var(--color-background);
+  }
+
+  .panel-layout__content {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  .panel-layout__main {
+    flex: 1;
+    width: 100%;
+    min-width: 0;
+    padding: 1.5rem;
+  }
+
+  @media (min-width: 1024px) {
+    .panel-layout__content {
+      margin-left: var(--navbar-width, 17rem);
+    }
+
+    .panel-layout__main {
+      padding: 2rem;
+    }
+  }
+</style>

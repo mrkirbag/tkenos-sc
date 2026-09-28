@@ -1,0 +1,12 @@
+# Robots.txt para www.tkeños-sc.com y tkeños-sc.com
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /api/
+Disallow: /login
+Disallow: /panel
+Disallow: /panel/
+
+# Sitemap principal
+Sitemap: https://www.tkeños-sc.com/sitemap.xml
