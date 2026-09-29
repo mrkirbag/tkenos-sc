@@ -24,6 +24,7 @@ import {
   CheckCircle2,
   Clock,
   RotateCw,
+  Package,
 } from 'lucide-react';
 
 import { isStoreOpen } from '@/lib/utils/schedule';
@@ -111,6 +112,7 @@ export default function CartDrawer({
   const [customerPhone, setCustomerPhone] = useState('');
   const [customerAddress, setCustomerAddress] = useState('');
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cash');
+  const [packagingPreference, setPackagingPreference] = useState<'juntos' | 'separados'>('juntos');
   const [orderNotes, setOrderNotes] = useState('');
 
   // UI state
@@ -177,6 +179,8 @@ export default function CartDrawer({
       if (savedAddress) setCustomerAddress(savedAddress);
       const savedPayment = localStorage.getItem('cart:payment_method') as PaymentMethod | null;
       if (savedPayment) setPaymentMethod(savedPayment);
+      const savedPreference = localStorage.getItem('cart:packaging_preference') as 'juntos' | 'separados' | null;
+      if (savedPreference) setPackagingPreference(savedPreference);
       const savedNotes = localStorage.getItem('cart:order_notes');
       if (savedNotes) setOrderNotes(savedNotes);
     } catch {
@@ -257,7 +261,7 @@ export default function CartDrawer({
         .then((data) => {
           if (data?.rates) setRates(data.rates);
         })
-        .catch(() => {});
+        .catch(() => { });
     }
   }, [exchangeRates]);
 
@@ -269,6 +273,7 @@ export default function CartDrawer({
       localStorage.setItem('cart:customer_phone', customerPhone);
       localStorage.setItem('cart:customer_address', customerAddress);
       localStorage.setItem('cart:payment_method', paymentMethod);
+      localStorage.setItem('cart:packaging_preference', packagingPreference);
       localStorage.setItem('cart:order_notes', orderNotes);
     } catch {
       // Ignore
@@ -363,7 +368,7 @@ export default function CartDrawer({
             setAvailableProducts(data.products);
           }
         })
-        .catch(() => {});
+        .catch(() => { });
     }
   }, [availableProducts.length]);
 
@@ -382,7 +387,7 @@ export default function CartDrawer({
           }
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, [isOpen, syncCart]);
 
   // Initialize suggestions when availableProducts becomes ready
@@ -533,14 +538,25 @@ export default function CartDrawer({
       return line;
     });
 
+    const boxCost = (rates as any).extra_box_cost ?? 0;
+    const hasBoxCost = packagingPreference === 'separados' && boxCost > 0;
+    if (hasBoxCost) {
+      let boxLine = `📦 *Caja Extra (Pedidos separados)* — ${formatCop(boxCost)}`;
+      if (activeCurrency !== 'COP') {
+        boxLine += ` (~ ${formatPriceByCurrency(boxCost, activeCurrency, rates)})`;
+      }
+      orderLines.push(boxLine);
+    }
+
+    const grandTotal = total + (hasBoxCost ? boxCost : 0);
+
     const lines: string[] = [
       `👋 *¡Hola, ${brandName}! Deseo realizar el siguiente pedido:*`,
       '',
       '📋 *DETALLE DEL PEDIDO:*',
       ...orderLines,
       '',
-      `💰 *TOTAL A PAGAR: ${formatCop(total)}${
-        activeCurrency !== 'COP' ? ` (~ ${formatPriceByCurrency(total, activeCurrency, rates)})` : ''
+      `💰 *TOTAL A PAGAR: ${formatCop(grandTotal)}${activeCurrency !== 'COP' ? ` (~ ${formatPriceByCurrency(grandTotal, activeCurrency, rates)})` : ''
       }*`,
       '',
       '👤 *DATOS DEL CLIENTE:*',
@@ -554,6 +570,7 @@ export default function CartDrawer({
     }
 
     lines.push(`• Método de pago: *${paymentMap[paymentMethod]}*`);
+    lines.push(`• Preferencia de empaque: *${packagingPreference === 'juntos' ? 'Juntos (Por defecto)' : 'Separados'}*`);
 
     if (orderNotes.trim()) {
       lines.push(`• Indicaciones: _${orderNotes.trim()}_`);
@@ -638,7 +655,7 @@ export default function CartDrawer({
           customer_name: trimmedName,
           customer_phone: trimmedPhone,
           delivery_address: orderType === 'delivery' ? customerAddress.trim() : undefined,
-          delivery_notes: orderNotes.trim() || undefined,
+          delivery_notes: (packagingPreference === 'separados' ? 'Empaquetar: Separados\n' : '') + orderNotes.trim(),
           payment_method_hint: paymentMethod,
           items: apiItems,
         }),
@@ -681,9 +698,8 @@ export default function CartDrawer({
       {showFloatingButton && (
         <button
           type="button"
-          className={`cart-drawer-fab ${count > 0 ? 'cart-drawer-fab--has-items' : ''} ${
-            badgePulse ? 'cart-drawer-fab--pulse' : ''
-          } ${!storeOpen ? 'cart-drawer-fab--disabled' : ''}`}
+          className={`cart-drawer-fab ${count > 0 ? 'cart-drawer-fab--has-items' : ''} ${badgePulse ? 'cart-drawer-fab--pulse' : ''
+            } ${!storeOpen ? 'cart-drawer-fab--disabled' : ''}`}
           onClick={() => {
             if (!storeOpen) return;
             setIsOpen(true);
@@ -899,13 +915,13 @@ export default function CartDrawer({
                             {item.hasInventory && item.stock !== null && item.stock !== undefined && (
                               <div className="cart-item__stock-info">
                                 {item.quantity >
-                                Math.max(
-                                  0,
-                                  item.stock -
+                                  Math.max(
+                                    0,
+                                    item.stock -
                                     items
                                       .filter((i) => i.productId === item.productId && i.key !== item.key)
                                       .reduce((s, i) => s + i.quantity, 0),
-                                ) ? (
+                                  ) ? (
                                   <span className="cart-item__stock-tag cart-item__stock-tag--warning">
                                     ⚠️ Excede el stock disponible ({item.stock} en total)
                                   </span>
@@ -986,9 +1002,8 @@ export default function CartDrawer({
 
                       <button
                         type="button"
-                        className={`cart-suggestions__refresh-btn ${
-                          isShuffling ? 'cart-suggestions__refresh-btn--spinning' : ''
-                        }`}
+                        className={`cart-suggestions__refresh-btn ${isShuffling ? 'cart-suggestions__refresh-btn--spinning' : ''
+                          }`}
                         onClick={handleReshuffleSuggestions}
                         title="Ver otras sugerencias al azar"
                         aria-label="Ver otras sugerencias al azar"
@@ -1014,9 +1029,8 @@ export default function CartDrawer({
                         return (
                           <div
                             key={product.id}
-                            className={`cart-suggestion-card ${
-                              inCartQty > 0 ? 'cart-suggestion-card--in-cart' : ''
-                            }`}
+                            className={`cart-suggestion-card ${inCartQty > 0 ? 'cart-suggestion-card--in-cart' : ''
+                              }`}
                             role="listitem"
                           >
                             <div className="cart-suggestion-card__media">
@@ -1033,11 +1047,10 @@ export default function CartDrawer({
                                 </div>
                               )}
                               <span
-                                className={`cart-suggestion-card__cat-badge ${
-                                  isDrinkProduct
+                                className={`cart-suggestion-card__cat-badge ${isDrinkProduct
                                     ? 'cart-suggestion-card__cat-badge--drink'
                                     : 'cart-suggestion-card__cat-badge--topping'
-                                }`}
+                                  }`}
                               >
                                 {isDrinkProduct ? 'Bebida' : 'Salsa'}
                               </span>
@@ -1058,9 +1071,8 @@ export default function CartDrawer({
 
                               <button
                                 type="button"
-                                className={`cart-suggestion-card__add-btn ${
-                                  isAdded ? 'cart-suggestion-card__add-btn--success' : ''
-                                }`}
+                                className={`cart-suggestion-card__add-btn ${isAdded ? 'cart-suggestion-card__add-btn--success' : ''
+                                  }`}
                                 onClick={() => handleAddSuggestion(product)}
                                 disabled={maxReached}
                                 aria-label={`Agregar ${product.name} al pedido`}
@@ -1112,9 +1124,8 @@ export default function CartDrawer({
                         <div className="cart-drawer__type-grid">
                           <button
                             type="button"
-                            className={`cart-drawer__type-btn ${
-                              orderType === 'delivery' ? 'cart-drawer__type-btn--active' : ''
-                            }`}
+                            className={`cart-drawer__type-btn ${orderType === 'delivery' ? 'cart-drawer__type-btn--active' : ''
+                              }`}
                             onClick={() => setOrderType('delivery')}
                           >
                             <Bike size={16} />
@@ -1122,9 +1133,8 @@ export default function CartDrawer({
                           </button>
                           <button
                             type="button"
-                            className={`cart-drawer__type-btn ${
-                              orderType === 'takeaway' ? 'cart-drawer__type-btn--active' : ''
-                            }`}
+                            className={`cart-drawer__type-btn ${orderType === 'takeaway' ? 'cart-drawer__type-btn--active' : ''
+                              }`}
                             onClick={() => setOrderType('takeaway')}
                           >
                             <Store size={16} />
@@ -1204,9 +1214,8 @@ export default function CartDrawer({
                         <div className="cart-drawer__payment-grid">
                           <button
                             type="button"
-                            className={`cart-drawer__payment-btn ${
-                              paymentMethod === 'cash' ? 'cart-drawer__payment-btn--active' : ''
-                            }`}
+                            className={`cart-drawer__payment-btn ${paymentMethod === 'cash' ? 'cart-drawer__payment-btn--active' : ''
+                              }`}
                             onClick={() => setPaymentMethod('cash')}
                           >
                             <Banknote size={15} />
@@ -1214,9 +1223,8 @@ export default function CartDrawer({
                           </button>
                           <button
                             type="button"
-                            className={`cart-drawer__payment-btn ${
-                              paymentMethod === 'transfer' ? 'cart-drawer__payment-btn--active' : ''
-                            }`}
+                            className={`cart-drawer__payment-btn ${paymentMethod === 'transfer' ? 'cart-drawer__payment-btn--active' : ''
+                              }`}
                             onClick={() => setPaymentMethod('transfer')}
                           >
                             <Send size={15} />
@@ -1224,15 +1232,46 @@ export default function CartDrawer({
                           </button>
                           <button
                             type="button"
-                            className={`cart-drawer__payment-btn ${
-                              paymentMethod === 'card' ? 'cart-drawer__payment-btn--active' : ''
-                            }`}
+                            className={`cart-drawer__payment-btn ${paymentMethod === 'card' ? 'cart-drawer__payment-btn--active' : ''
+                              }`}
                             onClick={() => setPaymentMethod('card')}
                           >
                             <CreditCard size={15} />
                             <span>Tarjeta</span>
                           </button>
                         </div>
+                      </div>
+
+                      {/* PACKAGING PREFERENCE */}
+                      <div className="cart-drawer__field">
+                        <label className="cart-drawer__label">
+                          <Package size={14} />
+                          <span>Preferencia de empaque</span>
+                        </label>
+                        <div className="cart-drawer__type-grid">
+                          <button
+                            type="button"
+                            className={`cart-drawer__type-btn ${packagingPreference === 'juntos' ? 'cart-drawer__type-btn--active' : ''
+                              }`}
+                            onClick={() => setPackagingPreference('juntos')}
+                          >
+                            <span>Juntos</span>
+                          </button>
+                          <button
+                            type="button"
+                            className={`cart-drawer__type-btn ${packagingPreference === 'separados' ? 'cart-drawer__type-btn--active' : ''
+                              }`}
+                            onClick={() => setPackagingPreference('separados')}
+                          >
+                            <span>Separados</span>
+                          </button>
+                        </div>
+                        {packagingPreference === 'separados' && ((rates as any).extra_box_cost ?? 0) > 0 && (
+                          <div className="cart-drawer__box-cost-notice">
+                            <AlertCircle size={14} />
+                            <span>Costo adicional por caja: {formatPriceByCurrency((rates as any).extra_box_cost, activeCurrency, rates)}</span>
+                          </div>
+                        )}
                       </div>
 
                       {/* ORDER NOTES */}
@@ -1272,18 +1311,18 @@ export default function CartDrawer({
                 <div className="cart-drawer__summary-line">
                   <span className="cart-drawer__summary-label">Subtotal estimado</span>
                   <span className="cart-drawer__summary-val">
-                    {formatPriceByCurrency(total, activeCurrency, rates)}
+                    {formatPriceByCurrency(total + (packagingPreference === 'separados' ? ((rates as any).extra_box_cost ?? 0) : 0), activeCurrency, rates)}
                   </span>
                 </div>
                 <div className="cart-drawer__total-line">
                   <span className="cart-drawer__total-label">Total a pagar</span>
                   <span className="cart-drawer__total-amount">
-                    {formatPriceByCurrency(total, activeCurrency, rates)}
+                    {formatPriceByCurrency(total + (packagingPreference === 'separados' ? ((rates as any).extra_box_cost ?? 0) : 0), activeCurrency, rates)}
                   </span>
                 </div>
                 {activeCurrency !== 'COP' && (
                   <div className="cart-drawer__total-secondary">
-                    <span>Base en COP: <strong>{formatCop(total)}</strong></span>
+                    <span>Base en COP: <strong>{formatCop(total + (packagingPreference === 'separados' ? ((rates as any).extra_box_cost ?? 0) : 0))}</strong></span>
                   </div>
                 )}
               </div>

@@ -452,14 +452,22 @@ export async function runMigrations(dbClient?: Client): Promise<void> {
         id TEXT PRIMARY KEY DEFAULT 'default',
         usd_rate REAL NOT NULL,
         bs_rate REAL NOT NULL,
+        extra_box_cost INTEGER DEFAULT 0 NOT NULL,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_by TEXT REFERENCES users(id)
       )
     `);
     await db.execute(
-      `INSERT INTO exchange_rates (id, usd_rate, bs_rate) VALUES ('default', 4000, 50)`,
+      `INSERT INTO exchange_rates (id, usd_rate, bs_rate, extra_box_cost) VALUES ('default', 4000, 50, 0)`,
     );
     console.log('✓ exchange_rates');
+  } else {
+    if (!(await columnExists(db, 'exchange_rates', 'extra_box_cost'))) {
+      await db.execute(
+        `ALTER TABLE exchange_rates ADD COLUMN extra_box_cost INTEGER DEFAULT 0 NOT NULL`,
+      );
+      console.log('✓ exchange_rates.extra_box_cost');
+    }
   }
 
   if (!(await columnExists(db, 'orders', 'foreign_currency'))) {
@@ -472,6 +480,16 @@ export async function runMigrations(dbClient?: Client): Promise<void> {
   if (!(await columnExists(db, 'orders', 'foreign_amount'))) {
     await db.execute(`ALTER TABLE orders ADD COLUMN foreign_amount REAL`);
     console.log('✓ orders.foreign_amount');
+  }
+
+  if (!(await columnExists(db, 'orders', 'packaging_preference'))) {
+    await db.execute(`ALTER TABLE orders ADD COLUMN packaging_preference TEXT DEFAULT 'juntos'`);
+    console.log('✓ orders.packaging_preference');
+  }
+
+  if (!(await columnExists(db, 'orders', 'packaging_fee'))) {
+    await db.execute(`ALTER TABLE orders ADD COLUMN packaging_fee REAL DEFAULT 0.0`);
+    console.log('✓ orders.packaging_fee');
   }
 
   if (!(await columnExists(db, 'cash_registers', 'initial_balance_usd'))) {

@@ -335,6 +335,43 @@ function OrderView({ orderId, canDeliver = false }: OrderViewProps) {
     },
   });
 
+  const updatePackagingPreferenceMutation = useMutation({
+    mutationFn: async ({ preference, fee }: { preference: 'juntos' | 'separados'; fee: number }) => {
+      const response = await fetch(`/api/orders/${orderId}/packaging`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ preference, fee }),
+      });
+      if (!response.ok) throw new Error(await parseError(response));
+      return response.json();
+    },
+    onMutate: async ({ preference, fee }) => {
+      await queryClient.cancelQueries({ queryKey: queryKeys.order(orderId) });
+      const previousOrder = queryClient.getQueryData<any>(queryKeys.order(orderId));
+      if (previousOrder?.order) {
+        queryClient.setQueryData(queryKeys.order(orderId), {
+          ...previousOrder,
+          order: {
+            ...previousOrder.order,
+            packaging_preference: preference,
+            packaging_fee: fee,
+            total: previousOrder.order.total - (previousOrder.order.packaging_fee || 0) + fee,
+          },
+        });
+      }
+      return { previousOrder };
+    },
+    onSuccess: () => {
+      invalidateOrder();
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousOrder) {
+        queryClient.setQueryData(queryKeys.order(orderId), context.previousOrder);
+      }
+      setActionError(err instanceof Error ? err.message : 'No se pudo actualizar la preferencia de empaque');
+    },
+  });
+
   function handleAddItem(event: React.FormEvent) {
     event.preventDefault();
     if (!addForm) return;
@@ -808,31 +845,61 @@ function OrderView({ orderId, canDeliver = false }: OrderViewProps) {
               </div>
             )}
 
-            {order.delivery_fee > 0 && (
+            {isUnpaid && (
+              <div className="order-view__total" style={{ fontSize: '0.9rem', opacity: 0.85, fontWeight: 500 }}>
+                <span>Empaque de productos</span>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button
+                    type="button"
+                    onClick={() => updatePackagingPreferenceMutation.mutate({ preference: 'juntos', fee: 0 })}
+                    style={{ padding: '0.25rem 0.6rem', fontSize: '0.8rem', borderRadius: '0.25rem', border: '1px solid var(--color-primary)', background: (!order.packaging_preference || order.packaging_preference === 'juntos') ? 'var(--color-secondary)' : 'transparent', color: (!order.packaging_preference || order.packaging_preference === 'juntos') ? 'var(--color-primary-foreground)' : 'var(--color-primary)', cursor: 'pointer' }}
+                  >
+                    Juntos
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => updatePackagingPreferenceMutation.mutate({ preference: 'separados', fee: rates?.extra_box_cost ?? 0 })}
+                    style={{ padding: '0.25rem 0.6rem', fontSize: '0.8rem', borderRadius: '0.25rem', border: '1px solid var(--color-primary)', background: order.packaging_preference === 'separados' ? 'var(--color-secondary)' : 'transparent', color: order.packaging_preference === 'separados' ? 'var(--color-primary-foreground)' : 'var(--color-primary)', cursor: 'pointer' }}
+                  >
+                    Separados
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {(order.delivery_fee > 0 || order.packaging_fee > 0) && (
               <>
                 <div className="order-view__total" style={{ fontSize: '0.9rem', opacity: 0.85, fontWeight: 500 }}>
                   <span>Subtotal productos</span>
-                  <MultiCurrencyPrice amountCop={order.total - order.delivery_fee} rates={rates} align="right" />
+                  <MultiCurrencyPrice amountCop={order.total - order.delivery_fee - order.packaging_fee} rates={rates} align="right" />
                 </div>
-                <div className="order-view__total" style={{ fontSize: '0.9rem', opacity: 0.85, fontWeight: 500 }}>
-                  <span>Domicilio</span>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <MultiCurrencyPrice amountCop={order.delivery_fee} rates={rates} align="right" />
-                    {isUnpaid && (
-                      <button
-                        type="button"
-                        className="order-view__fee-mini-edit"
-                        onClick={() => {
-                          setFeeInputValue(String(order.delivery_fee));
-                          setShowFeeModal(true);
-                        }}
-                        title="Modificar costo de delivery"
-                      >
-                        Editar
-                      </button>
-                    )}
+                {order.delivery_fee > 0 && (
+                  <div className="order-view__total" style={{ fontSize: '0.9rem', opacity: 0.85, fontWeight: 500 }}>
+                    <span>Domicilio</span>
+                    <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <MultiCurrencyPrice amountCop={order.delivery_fee} rates={rates} align="right" />
+                      {isUnpaid && (
+                        <button
+                          type="button"
+                          className="order-view__fee-mini-edit"
+                          onClick={() => {
+                            setFeeInputValue(String(order.delivery_fee));
+                            setShowFeeModal(true);
+                          }}
+                          title="Modificar costo de delivery"
+                        >
+                          Editar
+                        </button>
+                      )}
+                    </div>
                   </div>
-                </div>
+                )}
+                {order.packaging_fee > 0 && (
+                  <div className="order-view__total" style={{ fontSize: '0.9rem', opacity: 0.85, fontWeight: 500 }}>
+                    <span>Caja Extra (Pedidos separados)</span>
+                    <MultiCurrencyPrice amountCop={order.packaging_fee} rates={rates} align="right" />
+                  </div>
+                )}
               </>
             )}
 

@@ -16,6 +16,7 @@ import '@/components/settings/ExchangeRatesManager.css';
 type RatesForm = {
   usd_rate: string;
   bs_rate: string;
+  extra_box_cost: string;
 };
 
 const EXAMPLE_AMOUNT = 50000;
@@ -28,7 +29,7 @@ async function fetchExchangeRates(): Promise<ExchangeRates> {
 function ExchangeRatesManager() {
   const queryClient = useQueryClient();
   const toast = useToast();
-  const [form, setForm] = useState<RatesForm>({ usd_rate: '', bs_rate: '' });
+  const [form, setForm] = useState<RatesForm>({ usd_rate: '', bs_rate: '', extra_box_cost: '0' });
   const [error, setError] = useState('');
 
   const { data: rates, isLoading, error: loadError } = useQuery({
@@ -41,12 +42,13 @@ function ExchangeRatesManager() {
       setForm({
         usd_rate: String(rates.usd_rate),
         bs_rate: String(rates.bs_rate),
+        extra_box_cost: String(rates.extra_box_cost ?? 0),
       });
     }
   }, [rates]);
 
   const saveMutation = useMutation({
-    mutationFn: async (payload: { usd_rate: number; bs_rate: number }) => {
+    mutationFn: async (payload: { usd_rate: number; bs_rate: number; extra_box_cost: number }) => {
       const response = await fetch('/api/exchange-rates', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -61,6 +63,7 @@ function ExchangeRatesManager() {
       setForm({
         usd_rate: String(updated.usd_rate),
         bs_rate: String(updated.bs_rate),
+        extra_box_cost: String(updated.extra_box_cost ?? 0),
       });
       toast.success('Tasas actualizadas correctamente');
       setError('');
@@ -76,6 +79,7 @@ function ExchangeRatesManager() {
 
     const usdRate = Number(form.usd_rate);
     const bsRate = Number(form.bs_rate);
+    const extraBoxCost = Number(form.extra_box_cost);
 
     if (!Number.isFinite(usdRate) || usdRate <= 0) {
       setError('La tasa USD debe ser un número mayor a 0');
@@ -87,7 +91,12 @@ function ExchangeRatesManager() {
       return;
     }
 
-    saveMutation.mutate({ usd_rate: usdRate, bs_rate: bsRate });
+    if (!Number.isFinite(extraBoxCost) || extraBoxCost < 0) {
+      setError('El costo de caja extra no puede ser negativo');
+      return;
+    }
+
+    saveMutation.mutate({ usd_rate: usdRate, bs_rate: bsRate, extra_box_cost: extraBoxCost });
   }
 
   const previewRates: ExchangeRates | null =
@@ -156,6 +165,31 @@ function ExchangeRatesManager() {
                   step="any"
                   value={form.bs_rate}
                   onChange={(e) => setForm((prev) => ({ ...prev, bs_rate: e.target.value }))}
+                  className="exchange-rates__input"
+                  required
+                />
+              </div>
+            </label>
+          </div>
+
+          <div className="exchange-rates__card">
+            <div className="exchange-rates__card-header">
+              <Coins size={20} />
+              <div>
+                <h2>Costo Caja Extra</h2>
+              </div>
+            </div>
+
+            <label className="exchange-rates__label">
+              Valor en COP
+              <div className="exchange-rates__input-wrap">
+                <span className="exchange-rates__prefix">$</span>
+                <input
+                  type="number"
+                  min="0"
+                  step="any"
+                  value={form.extra_box_cost}
+                  onChange={(e) => setForm((prev) => ({ ...prev, extra_box_cost: e.target.value }))}
                   className="exchange-rates__input"
                   required
                 />

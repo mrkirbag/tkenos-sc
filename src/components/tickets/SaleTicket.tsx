@@ -102,16 +102,24 @@ export default function SaleTicket({
 
       <div className="sale-ticket__divider" />
 
-      {order.delivery_fee > 0 ? (
+      {(order.delivery_fee > 0 || order.packaging_fee > 0) ? (
         <>
           <div className="sale-ticket__line">
             <span>SUBTOTAL</span>
-            <span>{formatCop(order.total - order.delivery_fee)}</span>
+            <span>{formatCop(order.total - order.delivery_fee - (order.packaging_fee || 0))}</span>
           </div>
-          <div className="sale-ticket__line">
-            <span>DOMICILIO</span>
-            <span>{formatCop(order.delivery_fee)}</span>
-          </div>
+          {order.delivery_fee > 0 && (
+            <div className="sale-ticket__line">
+              <span>DOMICILIO</span>
+              <span>{formatCop(order.delivery_fee)}</span>
+            </div>
+          )}
+          {(order.packaging_fee || 0) > 0 && (
+            <div className="sale-ticket__line">
+              <span>CAJA EXTRA</span>
+              <span>{formatCop(order.packaging_fee)}</span>
+            </div>
+          )}
           <div className="sale-ticket__line sale-ticket__total">
             <span>TOTAL</span>
             <span>{formatCop(order.total)}</span>

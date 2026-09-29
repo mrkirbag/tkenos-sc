@@ -1496,3 +1496,16 @@
     padding: 1rem 1.25rem 1.25rem;
   }
 }
+
+.cart-drawer__box-cost-notice {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--color-primary-foreground);
+  margin-top: 8px;
+  background-color: var(--color-primary);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-weight: 500;
+}

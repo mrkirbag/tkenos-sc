@@ -118,6 +118,7 @@ export type ExchangeRates = {
   id: string;
   usd_rate: number;
   bs_rate: number;
+  extra_box_cost: number;
   updated_at: string;
   updated_by: string | null;
 };
@@ -143,6 +144,8 @@ export type Order = {
   delivery_address: string | null;
   delivery_notes: string | null;
   delivery_fee: number;
+  packaging_preference: string | null;
+  packaging_fee: number;
   created_at: string;
   updated_at: string;
 };

@@ -89,6 +89,8 @@ CREATE TABLE orders (
     delivery_address TEXT,
     delivery_notes TEXT,
     delivery_fee REAL DEFAULT 0.0,
+    packaging_preference TEXT DEFAULT 'juntos',
+    packaging_fee REAL DEFAULT 0.0,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY(table_id) REFERENCES tables(id),
@@ -113,6 +115,7 @@ CREATE TABLE exchange_rates (
     id TEXT PRIMARY KEY DEFAULT 'default',
     usd_rate REAL NOT NULL,
     bs_rate REAL NOT NULL,
+    extra_box_cost INTEGER DEFAULT 0 NOT NULL,
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     updated_by TEXT REFERENCES users(id)
 );

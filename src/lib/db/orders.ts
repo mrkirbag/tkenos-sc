@@ -56,6 +56,7 @@ const ORDER_COLUMNS = `
   id, table_id, order_type, delivery_payment_timing, user_id, cash_register_id, status, total,
   payment_method, foreign_currency, foreign_amount,
   customer_name, customer_phone, delivery_address, delivery_notes, delivery_fee,
+  packaging_preference, packaging_fee,
   created_at, updated_at
 `;
 
@@ -76,6 +77,8 @@ const ORDER_LIST_COLUMNS = `
   o.delivery_address,
   o.delivery_notes,
   o.delivery_fee,
+  o.packaging_preference,
+  o.packaging_fee,
   o.created_at,
   o.updated_at
 `;
@@ -107,6 +110,8 @@ function mapOrder(row: Record<string, unknown>): Order {
     delivery_address: row.delivery_address ? String(row.delivery_address) : null,
     delivery_notes: row.delivery_notes ? String(row.delivery_notes) : null,
     delivery_fee: Number(row.delivery_fee ?? 0),
+    packaging_preference: row.packaging_preference ? String(row.packaging_preference) : null,
+    packaging_fee: Number(row.packaging_fee ?? 0),
     created_at: String(row.created_at),
     updated_at: String(row.updated_at),
   };
@@ -331,7 +336,7 @@ async function recalculateOrderTotal(orderId: string): Promise<number> {
           SELECT COALESCE(SUM(quantity * price_at_sale), 0)
           FROM order_items
           WHERE order_id = ?
-        ) + COALESCE(delivery_fee, 0),
+        ) + COALESCE(delivery_fee, 0) + COALESCE(packaging_fee, 0),
         updated_at = ?
       WHERE id = ?
     `,
@@ -678,6 +683,39 @@ export async function updateOrderDeliveryFee(orderId: string, deliveryFee: numbe
       WHERE id = ?
     `,
     args: [fee, now, orderId],
+  });
+
+  await recalculateOrderTotal(orderId);
+
+  return getOrderById(orderId) as Promise<Order>;
+}
+
+/**
+ * Actualiza la preferencia de empaque y el costo de caja para un pedido y recalcula el total.
+ * Solo permitido mientras la orden no esté pagada/entregada/cancelada.
+ */
+export async function updateOrderPackagingPreference(orderId: string, preference: 'juntos' | 'separados', fee: number): Promise<Order> {
+  const order = await getOrderById(orderId);
+  if (!order) {
+    throw new Error('Comanda no encontrada');
+  }
+
+  if (order.status === 'pagado' || order.status === 'entregado' || order.status === 'cancelado') {
+    throw new Error('No se puede modificar la preferencia de empaque de una comanda cerrada o cancelada');
+  }
+
+  const packagingFee = Math.max(0, Number(fee) || 0);
+  const now = new Date().toISOString();
+
+  await db.execute({
+    sql: `
+      UPDATE orders
+      SET packaging_preference = ?,
+          packaging_fee = ?,
+          updated_at = ?
+      WHERE id = ?
+    `,
+    args: [preference, packagingFee, now, orderId],
   });
 
   await recalculateOrderTotal(orderId);

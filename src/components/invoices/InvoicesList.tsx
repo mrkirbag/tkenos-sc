@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { brand } from '@/data/brand';
 import { Alert, EmptyState, SkeletonTable } from '@/components/ui/Feedback';
 import Modal from '@/components/ui/Modal';
+import SaleTicket from '@/components/tickets/SaleTicket';
 import type { InvoiceListItem } from '@/lib/db/orders';
 import type { OrderPayment } from '@/lib/db/types';
 import {
@@ -298,44 +299,14 @@ function InvoicesList() {
             </div>
 
             {showTicket && (
-              <div className="invoices-list__ticket" id="invoice-ticket">
-                <div className="invoices-list__ticket-header">
-                  <strong>{brand.name}</strong>
-                  {brand.contact.address && <span>{brand.contact.address}</span>}
-                  {brand.contact.phone && <span>{brand.contact.phone}</span>}
-                  {brand.contact.instagram && <span>{brand.contact.instagram}</span>}
-                </div>
-                <div className="invoices-list__ticket-divider" />
-                <p>{formatOrderLabel({ ...detail.order, table_number: detail.table_number })}</p>
-                <p>{formatDateTime(detail.order.updated_at)}</p>
-                <p>Cajero: {detail.cashier_username}</p>
-                <div className="invoices-list__ticket-divider" />
-                {detail.items.map((item) => (
-                  <div key={item.id}>
-                    <div className="invoices-list__ticket-line">
-                      <span>
-                        {item.quantity} {item.product_name}
-                      </span>
-                      <span>{formatPrice(item.quantity * item.price_at_sale)}</span>
-                    </div>
-                    {item.extras?.map((extra) => (
-                      <p key={extra.product_id} className="invoices-list__item-note">
-                        {formatExtraLine(extra)}
-                      </p>
-                    ))}
-                  </div>
-                ))}
-                <div className="invoices-list__ticket-divider" />
-                <div className="invoices-list__ticket-line invoices-list__ticket-total">
-                  <span>TOTAL</span>
-                  <span>{formatPrice(detail.order.total)}</span>
-                </div>
-                <p className="invoices-list__ticket-method">
-                  {detail.payments.length > 0
-                    ? detail.payments.map((payment) => formatPaymentLine(payment)).join(' · ')
-                    : getPaymentLabel(detail.order.payment_method, detail.order.foreign_currency)}
-                </p>
-                <p className="invoices-list__ticket-footer">{brand.ticket.footer}</p>
+              <div className="invoices-list__ticket-wrapper" id="invoice-ticket" style={{ marginTop: '1rem' }}>
+                <SaleTicket
+                  order={detail.order as any}
+                  items={detail.items as any}
+                  tableNumber={detail.table_number}
+                  cashierUsername={detail.cashier_username}
+                  payments={detail.payments}
+                />
               </div>
             )}
           </>

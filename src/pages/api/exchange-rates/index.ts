@@ -9,7 +9,7 @@ const READ_ROLES: UserRole[] = ['admin', 'cajero'];
 
 function parseRate(value: unknown, label: string): number | null {
   const rate = Number(value);
-  if (!Number.isFinite(rate) || rate <= 0) {
+  if (!Number.isFinite(rate) || rate < 0) {
     return null;
   }
   return rate;
@@ -25,7 +25,7 @@ export const PATCH: APIRoute = async (context) => {
   const session = requireAdmin(context);
   if (session instanceof Response) return session;
 
-  let body: { usd_rate?: number; bs_rate?: number };
+  let body: { usd_rate?: number; bs_rate?: number; extra_box_cost?: number };
 
   try {
     body = await context.request.json();
@@ -35,6 +35,7 @@ export const PATCH: APIRoute = async (context) => {
 
   const usdRate = parseRate(body.usd_rate, 'USD');
   const bsRate = parseRate(body.bs_rate, 'BS');
+  const extraBoxCost = parseRate(body.extra_box_cost, 'Caja');
 
   if (usdRate === null) {
     return Response.json({ error: 'La tasa USD debe ser un número mayor a 0' }, { status: 400 });
@@ -47,6 +48,7 @@ export const PATCH: APIRoute = async (context) => {
   const rates = await updateExchangeRates({
     usd_rate: usdRate,
     bs_rate: bsRate,
+    extra_box_cost: extraBoxCost ?? undefined,
     updated_by: session.userId,
   });
 

@@ -177,7 +177,7 @@ export const navSections: NavSection[] = [
         description: 'Gestiona cuentas y roles del personal.',
       },
       {
-        label: 'Tasas de cambio',
+        label: 'Tasas de Cambio y Cajas',
         href: '/panel/tasas',
         icon: Coins,
         description: 'Configura las tasas de cambio del sistema.',
