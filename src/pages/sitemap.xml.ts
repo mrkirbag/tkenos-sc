@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 import { listActiveMenuProducts } from '@/lib/db/products';
 
 export const GET: APIRoute = async () => {
-  const siteUrl = 'https://www.tkeños-sc.com';
+  const siteUrl = 'https://xn--tkeos-sc-f3a.com';
   const products = await listActiveMenuProducts().catch(() => []);
   const now = new Date().toISOString().split('T')[0];
 

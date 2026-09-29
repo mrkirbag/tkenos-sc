@@ -55,7 +55,7 @@ async function createOgImage() {
         
         <g transform="translate(0, 240)">
           <rect width="300" height="48" rx="12" fill="#f9aa0b" />
-          <text x="24" y="31" font-family="Plus Jakarta Sans, system-ui, -apple-system, sans-serif" font-size="18" font-weight="800" fill="#181818" letter-spacing="0.5">www.tkeños-sc.com</text>
+          <text x="24" y="31" font-family="Plus Jakarta Sans, system-ui, -apple-system, sans-serif" font-size="18" font-weight="800" fill="#181818" letter-spacing="0.5">xn--tkeos-sc-f3a.com</text>
         </g>
       </g>
     </svg>

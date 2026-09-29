@@ -4,7 +4,7 @@ import react from '@astrojs/react';
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://www.tkeños-sc.com',
+  site: 'https://xn--tkeos-sc-f3a.com',
   integrations: [react()],
   output: 'server',
   adapter: netlify(),

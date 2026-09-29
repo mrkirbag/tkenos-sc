@@ -73,8 +73,8 @@ export const brand = {
   shortName: 'TK',
   tagline: 'Los mejores TKEÑOS que vas a probar',
   locale: 'es',
-  domain: 'www.tkeños-sc.com',
-  siteUrl: 'https://www.tkeños-sc.com',
+  domain: 'xn--tkeos-sc-f3a.com',
+  siteUrl: 'https://xn--tkeos-sc-f3a.com',
 
   currency: {
     code: 'COP',

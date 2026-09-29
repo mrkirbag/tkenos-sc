@@ -1,4 +1,4 @@
-# Robots.txt para www.tkeños-sc.com y tkeños-sc.com
+# Robots.txt para xn--tkeos-sc-f3a.com
 User-agent: *
 Allow: /
 Disallow: /admin
@@ -9,4 +9,4 @@ Disallow: /panel
 Disallow: /panel/
 
 # Sitemap principal
-Sitemap: https://www.tkeños-sc.com/sitemap.xml
+Sitemap: https://xn--tkeos-sc-f3a.com/sitemap.xml
