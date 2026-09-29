@@ -702,16 +702,6 @@ function OrderView({ orderId, canDeliver = false }: OrderViewProps) {
                     ? 'Domicilio'
                     : 'Mesa'}
               </span>
-              {isEditable && (
-                <button
-                  type="button"
-                  className="order-view__ticket-header-close-icon"
-                  onClick={() => setIsMobileTicketOpen(false)}
-                  aria-label="Cerrar detalle de pedido"
-                >
-                  <X size={16} />
-                </button>
-              )}
             </div>
           </div>
 

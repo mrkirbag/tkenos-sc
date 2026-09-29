@@ -661,17 +661,19 @@
   .catalog-manager__table tbody {
     display: flex;
     flex-direction: column;
-    gap: 0.75rem;
+    gap: 1rem;
   }
 
   .catalog-manager__table tr {
     display: flex;
     flex-direction: column;
-    gap: 0.625rem;
-    padding: 1rem;
-    border: 1px solid var(--color-border);
-    border-radius: 0.875rem;
-    background: var(--color-surface);
+    gap: 0.75rem;
+    padding: 1.25rem;
+    border: 1px solid var(--color-secondary);
+    border-radius: 1rem;
+    background: var(--color-primary);
+    color: var(--color-primary-foreground);
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 10%), 0 2px 4px -2px rgb(0 0 0 / 10%);
   }
 
   .catalog-manager__table td {
@@ -691,7 +693,7 @@
     font-weight: 600;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: var(--color-text-muted);
+    color: color-mix(in srgb, var(--color-primary-foreground) 80%, transparent);
     text-align: left;
   }
 
@@ -701,7 +703,7 @@
     gap: 0.25rem;
     padding-bottom: 0.625rem;
     margin-bottom: 0.125rem;
-    border-bottom: 1px dashed var(--color-border);
+    border-bottom: 1px dashed var(--color-secondary);
     text-align: left;
   }
 
@@ -719,7 +721,7 @@
     gap: 0.5rem;
     margin-top: 0.25rem;
     padding-top: 0.75rem;
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-secondary);
     text-align: left;
   }
 

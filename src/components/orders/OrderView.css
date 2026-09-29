@@ -34,7 +34,7 @@
   margin: 0;
   font-size: clamp(1.25rem, 2.5vw, 1.75rem);
   font-weight: 700;
-  color: var(--color-primary-foreground);
+  color: var(--color-primary);
 }
 
 .order-view__status {
@@ -301,13 +301,13 @@
   top: 1rem;
   display: flex;
   flex-direction: column;
-  min-height: 24rem;
+  max-height: calc(100vh - 2rem);
   border: 1.5px solid var(--color-secondary);
   border-radius: 1rem;
   background: var(--color-primary);
   color: var(--color-primary-foreground);
   box-shadow: 0 2px 8px rgb(0 0 0 / 15%);
-  overflow: hidden;
+  overflow-y: auto;
 }
 
 .order-view__ticket-header {
@@ -360,7 +360,6 @@
 .order-view__mobile-fab-container,
 .order-view__mobile-backdrop,
 .order-view__ticket-mobile-handle-bar,
-.order-view__ticket-header-close-icon,
 .order-view__mobile-keep-adding-btn {
   display: none;
 }
@@ -383,12 +382,12 @@
 }
 
 .order-view__items {
-  flex: 1;
+  flex: 1 1 auto;
+  min-height: 12rem;
   list-style: none;
   margin: 0;
   padding: 0.75rem;
   overflow-y: auto;
-  max-height: 24rem;
   color: var(--color-primary-foreground);
 }
 
@@ -695,7 +694,7 @@
   color: var(--color-primary-foreground);
 }
 
-.order-view__delivery-info p + p {
+.order-view__delivery-info p+p {
   margin-top: 0.375rem;
 }
 
@@ -932,7 +931,7 @@
   color: var(--color-primary-foreground);
 }
 
-.order-view__modal--confirm .ui-modal__body > p {
+.order-view__modal--confirm .ui-modal__body>p {
   font-weight: 500;
   line-height: 1.5;
   color: var(--color-primary-foreground);
@@ -1196,37 +1195,29 @@
   .order-view__ticket-mobile-close-btn {
     display: inline-flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: 0.35rem;
     padding: 0.3rem 0.75rem;
     border-radius: 999px;
-    border: 1px solid var(--color-border);
-    background: color-mix(in srgb, var(--color-primary) 8%, var(--color-background));
-    color: var(--color-primary);
+    border: 1px solid color-mix(in srgb, var(--color-background) 20%, transparent);
+    background: transparent;
+    color: var(--color-background);
     font-size: 0.75rem;
     font-weight: 600;
     cursor: pointer;
   }
 
+  .order-view__ticket-mobile-close-btn svg {
+    color: var(--color-secondary);
+    background: var(--color-background);
+    border-radius: 50%;
+    padding: 2px;
+    width: 18px;
+    height: 18px;
+    box-sizing: border-box;
+  }
+
   .order-view__ticket .order-view__ticket-header {
     padding: 0.875rem 1.35rem 0.75rem;
-  }
-
-  .order-view__ticket-header-close-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.125rem;
-    height: 2.125rem;
-    border-radius: 50%;
-    border: 1px solid var(--color-border);
-    background: var(--color-background);
-    color: var(--color-text);
-    cursor: pointer;
-    transition: background 0.15s ease;
-  }
-
-  .order-view__ticket-header-close-icon:active {
-    background: color-mix(in srgb, var(--color-primary) 12%, var(--color-background));
   }
 
   .order-view__ticket .order-view__empty-items {
@@ -1235,7 +1226,7 @@
 
   .order-view__ticket .order-view__items {
     flex: 1 1 auto;
-    max-height: calc(88dvh - 17rem);
+    min-height: 12rem;
     padding: 0.875rem 1.35rem;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
@@ -1249,7 +1240,7 @@
     gap: 0.875rem;
   }
 
-  .order-view__ticket .order-view__item-main > div {
+  .order-view__ticket .order-view__item-main>div {
     min-width: 0;
   }
 
@@ -1340,9 +1331,17 @@
   }
 
   @keyframes fabComandaPulse {
-    0% { transform: scale(1); }
-    40% { transform: scale(1.06); }
-    100% { transform: scale(1); }
+    0% {
+      transform: scale(1);
+    }
+
+    40% {
+      transform: scale(1.06);
+    }
+
+    100% {
+      transform: scale(1);
+    }
   }
 
   .order-view__mobile-fab-left {
@@ -1565,4 +1564,52 @@
   color: var(--color-secondary-foreground) !important;
 }
 
+/* Scrollbars personalizadas */
+.order-view__ticket::-webkit-scrollbar,
+.order-view__items::-webkit-scrollbar,
+.order-view__categories::-webkit-scrollbar,
+.order-view__product-grid::-webkit-scrollbar,
+.ui-modal__content::-webkit-scrollbar,
+.order-view__modal-body::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
 
+.order-view__ticket::-webkit-scrollbar-track,
+.order-view__items::-webkit-scrollbar-track,
+.order-view__categories::-webkit-scrollbar-track,
+.order-view__product-grid::-webkit-scrollbar-track,
+.ui-modal__content::-webkit-scrollbar-track,
+.order-view__modal-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.order-view__ticket::-webkit-scrollbar-thumb,
+.order-view__items::-webkit-scrollbar-thumb,
+.order-view__categories::-webkit-scrollbar-thumb,
+.order-view__product-grid::-webkit-scrollbar-thumb,
+.ui-modal__content::-webkit-scrollbar-thumb,
+.order-view__modal-body::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--color-secondary) 50%, transparent);
+  border-radius: 999px;
+}
+
+.order-view__ticket::-webkit-scrollbar-thumb:hover,
+.order-view__items::-webkit-scrollbar-thumb:hover,
+.order-view__categories::-webkit-scrollbar-thumb:hover,
+.order-view__product-grid::-webkit-scrollbar-thumb:hover,
+.ui-modal__content::-webkit-scrollbar-thumb:hover,
+.order-view__modal-body::-webkit-scrollbar-thumb:hover {
+  background: var(--color-secondary);
+}
+
+/* Soporte para Firefox */
+.order-view__ticket,
+.order-view__items,
+.order-view__categories,
+.order-view__product-grid,
+.ui-modal__content,
+.order-view__modal-body {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--color-secondary) 50%, transparent) transparent;
+}

@@ -603,7 +603,7 @@ const flavorGroups = product.flavor_groups ?? [];
                             </svg>
                           </span>
                           <span class="prod-submit-btn__label">
-                            Agregar al pedido
+                            Agregar
                           </span>
                           <span class="prod-submit-btn__dot">•</span>
                           <span class="prod-submit-btn__price" id="btn-total">
@@ -1070,7 +1070,9 @@ const flavorGroups = product.flavor_groups ?? [];
             });
             notifyCartChanged();
             updateNavCartBadge();
-            openCartDrawer();
+            
+            // Redirigir al catálogo en lugar de abrir el drawer
+            window.location.href = "/";
 
             // Smooth feedback & micro-interaction
             if (submitBtn) {

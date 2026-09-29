@@ -117,7 +117,7 @@ export default function CartDrawer({
 
   // UI state
   const [showClearConfirm, setShowClearConfirm] = useState(false);
-  const [showDetails, setShowDetails] = useState(true);
+  const [showDetails, setShowDetails] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [badgePulse, setBadgePulse] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -1032,6 +1032,7 @@ export default function CartDrawer({
                             className={`cart-suggestion-card ${inCartQty > 0 ? 'cart-suggestion-card--in-cart' : ''
                               }`}
                             role="listitem"
+                            style={{ gridRow: isDrinkProduct ? 1 : 2 }}
                           >
                             <div className="cart-suggestion-card__media">
                               {product.image_url ? (

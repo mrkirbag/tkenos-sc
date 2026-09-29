@@ -552,6 +552,53 @@ const structuredData = {
       }
 
       setInterval(updateStatusBadge, 30000);
+
+      // Carrusel automático en móvil
+      const menuGrids = document.querySelectorAll<HTMLElement>('.menu-grid');
+      
+      menuGrids.forEach(grid => {
+        let isAutoScrolling = true;
+        let scrollInterval: number | undefined;
+
+        const startAutoScroll = () => {
+          if (window.innerWidth <= 640) {
+            scrollInterval = window.setInterval(() => {
+              if (isAutoScrolling) {
+                // Si el usuario no ha interactuado, mover el scroll
+                if (grid.scrollLeft + grid.clientWidth >= grid.scrollWidth - 10) {
+                  grid.scrollTo({ left: 0, behavior: 'smooth' });
+                } else {
+                  // Mueve aproximadamente el ancho de una card
+                  grid.scrollBy({ left: grid.clientWidth * 0.85, behavior: 'smooth' });
+                }
+              }
+            }, 3500);
+          }
+        };
+
+        const stopAutoScroll = () => {
+          isAutoScrolling = false;
+          if (scrollInterval !== undefined) {
+            window.clearInterval(scrollInterval);
+          }
+        };
+
+        // Detener auto-scroll cuando el usuario interactúa
+        grid.addEventListener('touchstart', stopAutoScroll, { passive: true });
+        grid.addEventListener('mousedown', stopAutoScroll, { passive: true });
+        
+        // Iniciar auto-scroll
+        startAutoScroll();
+
+        // Manejar cambios de tamaño de ventana
+        window.addEventListener('resize', () => {
+          stopAutoScroll();
+          if (window.innerWidth <= 640) {
+            isAutoScrolling = true;
+            startAutoScroll();
+          }
+        });
+      });
     </script>
   </body>
 </html>
@@ -993,6 +1040,29 @@ const structuredData = {
 
     .menu__categories {
       justify-content: flex-start;
+    }
+
+    .menu-grid {
+      display: flex;
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      gap: 1rem;
+      padding-bottom: 1rem;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+      scroll-behavior: smooth;
+    }
+    
+    .menu-grid::-webkit-scrollbar {
+      display: none;
+    }
+
+    .menu-grid > :global(*) {
+      flex: 0 0 85%;
+      scroll-snap-align: center;
+      max-width: 85%;
     }
   }
 </style>
