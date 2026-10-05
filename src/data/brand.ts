@@ -114,7 +114,7 @@ export const brand = {
     city: 'San Cristóbal',
     country: 'Venezuela',
     openingHour: '8:00',
-    closingHour: '22:00',
+    closingHour: '20:00',
   },
 
   ticket: {

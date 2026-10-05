@@ -468,10 +468,12 @@ Haz clic en **+ Nuevo insumo**:
 | Campo | Descripción |
 |---|---|
 | Nombre | Nombre del insumo |
-| Categoría | A qué categoría pertenece |
+| Categoría | A qué categoría pertenece (incluye **Paquetería**, exclusiva de inventario para cajas, bolsas y empaques) |
 | Unidad | La unidad de medida (Unidades) |
 | Stock inicial | Cuántas unidades tienes al momento de crearlo |
 | Stock mínimo | A partir de cuántas unidades se muestra la alerta de "stock bajo" |
+
+> **Nota sobre la categoría Paquetería:** Esta categoría es exclusiva de inventario (no se muestra como producto en venta en el catálogo ni en la carta pública). Es ideal para cajas, bolsas, vasos y empaques que luego puedes asociar a la receta de tus productos en el Catálogo para que se descuenten automáticamente con cada venta.
 
 ### Registrar movimientos de stock
 

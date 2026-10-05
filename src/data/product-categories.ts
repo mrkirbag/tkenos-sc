@@ -28,8 +28,11 @@ export const productCategories: ProductCategory[] = [
 /** Categorías del menú para comandas y catálogo. */
 export const menuCategories: MenuCategory[] = productCategories;
 
-/** Categorías de insumos controlados en inventario (mismas que catálogo). */
-export const inventoryCategories: InventoryCategory[] = productCategories;
+/** Categorías de insumos controlados en inventario (catálogo más categorías exclusivas de inventario). */
+export const inventoryCategories: InventoryCategory[] = [
+  ...productCategories,
+  { id: 'paqueteria', label: 'Paquetería' },
+];
 
 export const inventoryUnits: InventoryUnit[] = [
   { id: 'unidades', label: 'Unidades' }
@@ -42,6 +45,7 @@ const LEGACY_INVENTORY_CATEGORY_LABELS: Record<string, string> = {
   adicionales: 'Adicionales',
   salsas: 'Salsas',
   toppings: 'Toppings',
+  paqueteria: 'Paquetería',
 };
 
 export function getMenuCategoryLabel(id: string): string {

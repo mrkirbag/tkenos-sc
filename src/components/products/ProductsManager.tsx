@@ -7,6 +7,7 @@ import {
   getInventoryCategoryLabel,
   getInventoryUnitLabel,
   getMenuCategoryLabel,
+  inventoryCategories,
   menuCategories,
 } from '@/data/product-categories';
 import { useToast } from '@/components/providers/ToastProvider';
@@ -739,7 +740,7 @@ function ProductsManager() {
                           required
                         >
                           <option value="">Selecciona un insumo...</option>
-                          {menuCategories.map((cat) => {
+                          {inventoryCategories.map((cat) => {
                             const catItems = inventoryItems.filter((i) => i.category === cat.id);
                             if (catItems.length === 0) return null;
                             return (
@@ -753,7 +754,7 @@ function ProductsManager() {
                             );
                           })}
                           {(() => {
-                            const knownCategoryIds = new Set(menuCategories.map((c) => c.id));
+                            const knownCategoryIds = new Set(inventoryCategories.map((c) => c.id));
                             const otherItems = inventoryItems.filter((i) => !knownCategoryIds.has(i.category));
                             if (otherItems.length === 0) return null;
                             return (
