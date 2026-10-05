@@ -420,7 +420,7 @@
 .catalog-manager__modal-panel {
   position: relative;
   width: 100%;
-  max-width: min(36rem, 95vw);
+  max-width: min(42rem, 100%);
   border: 1.5px solid var(--color-secondary);
   border-radius: 1rem;
   background: var(--color-primary);
@@ -428,48 +428,24 @@
   box-shadow: 0 20px 48px rgb(0 0 0 / 25%);
 }
 
-.catalog-manager__modal-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: 1.25rem 1.25rem 0;
-  border-bottom: 1.5px solid var(--color-secondary);
-  padding-bottom: 0.75rem;
-}
-
-.catalog-manager__modal-header h2 {
-  margin: 0;
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: var(--color-primary-foreground);
-}
-
-.catalog-manager__modal-close {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2rem;
-  height: 2rem;
-  padding: 0;
-  border: none;
-  border-radius: 0.5rem;
-  background: transparent;
-  color: var(--color-primary-foreground);
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.catalog-manager__modal-close:hover {
-  background: color-mix(in srgb, var(--color-secondary) 25%, transparent);
-  color: var(--color-primary-foreground);
-}
-
 .catalog-manager__form {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  padding: 1.25rem;
+  padding: 0;
+}
+
+.catalog-manager__form-row-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+@media (max-width: 640px) {
+  .catalog-manager__form-row-2 {
+    grid-template-columns: 1fr;
+    gap: 0.85rem;
+  }
 }
 
 .catalog-manager__field {
@@ -522,7 +498,24 @@
   display: flex;
   justify-content: flex-end;
   gap: 0.75rem;
-  margin-top: 0.25rem;
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid color-mix(in srgb, var(--color-secondary) 25%, transparent);
+}
+
+@media (max-width: 640px) {
+  .catalog-manager__form-actions {
+    flex-direction: column-reverse;
+    gap: 0.5rem;
+  }
+
+  .catalog-manager__cancel,
+  .catalog-manager__submit {
+    width: 100%;
+    justify-content: center;
+    padding: 0.85rem 1rem;
+    font-size: 0.92rem;
+  }
 }
 
 .catalog-manager__cancel,
@@ -892,7 +885,9 @@
   cursor: pointer;
 }
 
-/* FLAVOR GROUPS & COMBOS STYLES */
+/* ==========================================================================
+   FLAVOR GROUPS & COMBOS STYLES (RESPONSIVE)
+   ========================================================================== */
 .catalog-manager__flavor-badge {
   color: var(--color-secondary) !important;
   font-weight: 700;
@@ -902,8 +897,8 @@
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
-  padding: 1.1rem;
-  border: 1.5px solid color-mix(in srgb, var(--color-secondary) 50%, transparent);
+  padding: 1rem;
+  border: 1.5px solid color-mix(in srgb, var(--color-secondary) 45%, transparent);
   border-radius: 0.85rem;
   background: color-mix(in srgb, var(--color-secondary) 8%, var(--color-primary));
   margin-top: 0.5rem;
@@ -918,7 +913,7 @@
 
 .catalog-manager__flavors-title {
   display: block;
-  font-size: 0.9rem;
+  font-size: 0.9375rem;
   font-weight: 700;
   color: var(--color-primary-foreground);
   margin-bottom: 0.2rem;
@@ -928,28 +923,29 @@
   font-size: 0.78rem;
   color: color-mix(in srgb, var(--color-primary-foreground) 80%, transparent);
   margin: 0;
-  line-height: 1.35;
+  line-height: 1.4;
 }
 
 .catalog-manager__btn-add-group {
   display: inline-flex;
   align-items: center;
-  gap: 0.35rem;
-  padding: 0.45rem 0.85rem;
+  gap: 0.4rem;
+  padding: 0.5rem 0.85rem;
   background: var(--color-secondary);
   color: var(--color-secondary-foreground);
   border: none;
   border-radius: 0.6rem;
-  font-size: 0.78rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   cursor: pointer;
   white-space: nowrap;
   transition: all 0.15s ease;
-  box-shadow: 0 2px 4px color-mix(in srgb, var(--color-secondary) 30%, transparent);
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--color-secondary) 30%, transparent);
+  flex-shrink: 0;
 }
 
 .catalog-manager__btn-add-group:hover {
-  filter: brightness(1.05);
+  filter: brightness(1.06);
   transform: translateY(-1px);
 }
 
@@ -960,7 +956,7 @@
   padding: 0.85rem 1rem;
   background: var(--color-primary);
   border-radius: 0.65rem;
-  border: 1.5px dashed color-mix(in srgb, var(--color-secondary) 40%, transparent);
+  border: 1.5px dashed color-mix(in srgb, var(--color-secondary) 35%, transparent);
   text-align: center;
 }
 
@@ -971,7 +967,7 @@
 }
 
 .catalog-manager__flavor-group-card {
-  padding: 1rem;
+  padding: 0.9rem;
   border: 1.5px solid var(--color-secondary);
   border-radius: 0.75rem;
   background: var(--color-primary);
@@ -981,27 +977,60 @@
   box-shadow: 0 2px 8px color-mix(in srgb, var(--color-secondary) 15%, transparent);
 }
 
-.catalog-manager__flavor-group-top {
+.catalog-manager__flavor-group-card-header {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
-  gap: 0.65rem;
+  gap: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px dashed color-mix(in srgb, var(--color-secondary) 40%, transparent);
+}
+
+.catalog-manager__flavor-group-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-secondary) 20%, transparent);
+  color: var(--color-secondary);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.catalog-manager__btn-remove-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.65rem;
+  border: 1.5px solid color-mix(in srgb, var(--color-error) 40%, transparent);
+  background: color-mix(in srgb, var(--color-error) 10%, transparent);
+  color: var(--color-error);
+  border-radius: 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.catalog-manager__btn-remove-group:hover {
+  background: var(--color-error);
+  color: #ffffff;
 }
 
 .catalog-manager__flavor-group-inputs {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
+  display: grid;
+  grid-template-columns: 1fr 140px;
   gap: 0.75rem;
-  flex: 1;
+  align-items: flex-end;
 }
 
 .catalog-manager__group-field {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-  flex: 1;
-  min-width: 140px;
+  min-width: 0;
 }
 
 .catalog-manager__group-field label {
@@ -1030,57 +1059,46 @@
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-secondary) 25%, transparent);
 }
 
-.catalog-manager__group-field--units {
-  flex: 0 0 110px;
-  min-width: 95px;
+.catalog-manager__group-field input::placeholder {
+  color: color-mix(in srgb, var(--color-primary-foreground) 45%, transparent);
 }
 
-.catalog-manager__group-required {
+.catalog-manager__group-toggles {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0.6rem 0.75rem;
+  background: color-mix(in srgb, var(--color-secondary) 8%, var(--color-primary));
+  border: 1px solid color-mix(in srgb, var(--color-secondary) 30%, transparent);
+  border-radius: 0.6rem;
+}
+
+.catalog-manager__group-checkbox {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
+  gap: 0.5rem;
   font-size: 0.82rem;
   font-weight: 700;
   color: var(--color-primary-foreground);
   cursor: pointer;
-  padding-bottom: 0.4rem;
   user-select: none;
+  line-height: 1.3;
 }
 
-.catalog-manager__group-required input[type="checkbox"] {
+.catalog-manager__group-checkbox input[type="checkbox"] {
   width: 1.15rem;
   height: 1.15rem;
   accent-color: var(--color-secondary);
   cursor: pointer;
-}
-
-.catalog-manager__btn-remove-group {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 2.1rem;
-  height: 2.1rem;
-  padding: 0;
-  border: 1.5px solid color-mix(in srgb, var(--color-error) 40%, transparent);
-  background: color-mix(in srgb, var(--color-error) 10%, transparent);
-  color: var(--color-error);
-  border-radius: 0.5rem;
-  cursor: pointer;
-  transition: all 0.15s ease;
-  margin-top: 1.25rem;
-}
-
-.catalog-manager__btn-remove-group:hover {
-  background: var(--color-error);
-  color: #ffffff;
+  flex-shrink: 0;
 }
 
 .catalog-manager__flavor-options-wrap {
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0.65rem;
   padding-top: 0.75rem;
-  border-top: 1.5px dashed color-mix(in srgb, var(--color-secondary) 40%, transparent);
+  border-top: 1.5px dashed color-mix(in srgb, var(--color-secondary) 35%, transparent);
 }
 
 .catalog-manager__flavor-options-label {
@@ -1100,12 +1118,21 @@
 .catalog-manager__flavor-option-row {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.55rem;
+}
+
+.catalog-manager__option-name-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.catalog-manager__option-inventory-wrap {
+  flex: 1.4;
+  min-width: 0;
 }
 
 .catalog-manager__option-name-input {
-  flex: 1;
-  min-width: 120px;
+  width: 100%;
   padding: 0.55rem 0.75rem;
   border: 1.5px solid var(--color-secondary);
   border-radius: 0.6rem;
@@ -1122,9 +1149,12 @@
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-secondary) 25%, transparent);
 }
 
+.catalog-manager__option-name-input::placeholder {
+  color: color-mix(in srgb, var(--color-primary-foreground) 45%, transparent);
+}
+
 .catalog-manager__option-inventory-select {
-  flex: 1.5;
-  min-width: 180px;
+  width: 100%;
   padding: 0.55rem 0.75rem;
   border: 1.5px solid var(--color-secondary);
   border-radius: 0.6rem;
@@ -1133,11 +1163,6 @@
   font-size: 0.82rem;
   font-weight: 500;
   transition: all 0.15s ease;
-}
-
-.catalog-manager__group-field input::placeholder,
-.catalog-manager__option-name-input::placeholder {
-  color: color-mix(in srgb, var(--color-primary-foreground) 45%, transparent);
 }
 
 .catalog-manager__option-inventory-select option,
@@ -1156,13 +1181,13 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
+  width: 34px;
+  height: 34px;
   padding: 0;
-  border: 1px solid color-mix(in srgb, var(--color-error) 30%, transparent);
-  background: color-mix(in srgb, var(--color-error) 8%, transparent);
+  border: 1.5px solid color-mix(in srgb, var(--color-error) 35%, transparent);
+  background: color-mix(in srgb, var(--color-error) 10%, transparent);
   color: var(--color-error);
-  border-radius: 0.45rem;
+  border-radius: 0.5rem;
   cursor: pointer;
   transition: all 0.15s ease;
   flex-shrink: 0;
@@ -1174,7 +1199,7 @@
 }
 
 .catalog-manager__btn-remove-opt:disabled {
-  opacity: 0.25;
+  opacity: 0.3;
   cursor: not-allowed;
   border-color: transparent;
   background: transparent;
@@ -1185,7 +1210,7 @@
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
-  padding: 0.4rem 0.75rem;
+  padding: 0.45rem 0.8rem;
   background: color-mix(in srgb, var(--color-secondary) 15%, var(--color-primary));
   color: var(--color-primary-foreground);
   border: 1.5px dashed var(--color-secondary);
@@ -1202,3 +1227,282 @@
   transform: translateY(-1px);
 }
 
+/* ==========================================================================
+   INSUMOS A DESCONTAR (RECETA / BOM) STYLES (RESPONSIVE)
+   ========================================================================== */
+.catalog-manager__recipe-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  padding: 1rem;
+  border: 1.5px solid color-mix(in srgb, var(--color-secondary) 45%, transparent);
+  border-radius: 0.85rem;
+  background: color-mix(in srgb, var(--color-secondary) 8%, var(--color-primary));
+  margin-top: 0.5rem;
+}
+
+.catalog-manager__recipe-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.catalog-manager__recipe-title {
+  display: block;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: var(--color-primary-foreground);
+  margin-bottom: 0.2rem;
+}
+
+.catalog-manager__recipe-subtitle {
+  font-size: 0.78rem;
+  color: color-mix(in srgb, var(--color-primary-foreground) 80%, transparent);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.catalog-manager__btn-add-recipe-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.85rem;
+  background: var(--color-secondary);
+  color: var(--color-secondary-foreground);
+  border: none;
+  border-radius: 0.6rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.15s ease;
+  box-shadow: 0 2px 6px color-mix(in srgb, var(--color-secondary) 30%, transparent);
+  flex-shrink: 0;
+}
+
+.catalog-manager__btn-add-recipe-item:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+}
+
+.catalog-manager__recipe-empty {
+  font-size: 0.82rem;
+  color: color-mix(in srgb, var(--color-primary-foreground) 75%, transparent);
+  font-style: italic;
+  padding: 0.85rem 1rem;
+  background: var(--color-primary);
+  border-radius: 0.65rem;
+  border: 1.5px dashed color-mix(in srgb, var(--color-secondary) 35%, transparent);
+  text-align: center;
+}
+
+.catalog-manager__recipe-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.catalog-manager__recipe-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.65rem;
+  padding: 0.75rem 0.85rem;
+  background: var(--color-primary);
+  border: 1.5px solid var(--color-secondary);
+  border-radius: 0.65rem;
+}
+
+.catalog-manager__recipe-select-wrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.catalog-manager__recipe-row-actions {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.55rem;
+  flex-shrink: 0;
+}
+
+.catalog-manager__recipe-units-wrap {
+  width: 90px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.catalog-manager__recipe-col-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--color-primary-foreground);
+}
+
+.catalog-manager__recipe-select-wrap select,
+.catalog-manager__recipe-units-wrap input {
+  width: 100%;
+  padding: 0.52rem 0.65rem;
+  border: 1.5px solid var(--color-secondary);
+  border-radius: 0.5rem;
+  background: var(--color-primary);
+  color: var(--color-primary-foreground);
+  font-size: 0.82rem;
+  font-weight: 500;
+  transition: all 0.15s ease;
+}
+
+.catalog-manager__recipe-select-wrap select:focus,
+.catalog-manager__recipe-units-wrap input:focus {
+  outline: none;
+  border-color: var(--color-secondary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-secondary) 25%, transparent);
+}
+
+.catalog-manager__recipe-stock-badge {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-secondary);
+  background: color-mix(in srgb, var(--color-secondary) 15%, transparent);
+  padding: 0.52rem 0.65rem;
+  border-radius: 0.5rem;
+  white-space: nowrap;
+  height: 36px;
+  box-sizing: border-box;
+}
+
+.catalog-manager__btn-remove-recipe-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 0.5rem;
+  border: 1.5px solid color-mix(in srgb, var(--color-error) 40%, transparent);
+  background: color-mix(in srgb, var(--color-error) 12%, transparent);
+  color: #ff6b6b;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.catalog-manager__btn-remove-recipe-item:hover {
+  background: var(--color-error, #e53935);
+  color: #ffffff;
+}
+
+/* ==========================================================================
+   MOBILE RESPONSIVE BREAKPOINT FOR CATALOG MODAL (≤ 640px)
+   ========================================================================== */
+@media (max-width: 640px) {
+  /* Headers stack vertically */
+  .catalog-manager__flavors-header,
+  .catalog-manager__recipe-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+
+  .catalog-manager__btn-add-group,
+  .catalog-manager__btn-add-recipe-item {
+    width: 100%;
+    justify-content: center;
+    padding: 0.65rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  /* Flavor Group Cards on Mobile */
+  .catalog-manager__flavor-group-card {
+    padding: 0.75rem;
+    gap: 0.75rem;
+  }
+
+  .catalog-manager__flavor-group-inputs {
+    grid-template-columns: 1fr;
+    gap: 0.65rem;
+  }
+
+  /* Flavor Options Micro-cards on Mobile */
+  .catalog-manager__flavor-option-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-areas:
+      "name remove"
+      "inventory inventory";
+    gap: 0.5rem;
+    padding: 0.65rem;
+    background: color-mix(in srgb, var(--color-secondary) 6%, var(--color-primary));
+    border: 1px solid color-mix(in srgb, var(--color-secondary) 30%, transparent);
+    border-radius: 0.65rem;
+  }
+
+  .catalog-manager__option-name-wrap {
+    grid-area: name;
+    min-width: 0;
+  }
+
+  .catalog-manager__btn-remove-opt {
+    grid-area: remove;
+    width: 36px;
+    height: 36px;
+  }
+
+  .catalog-manager__option-inventory-wrap {
+    grid-area: inventory;
+    min-width: 0;
+  }
+
+  .catalog-manager__btn-add-opt {
+    width: 100%;
+    justify-content: center;
+    padding: 0.65rem 1rem;
+    font-size: 0.8125rem;
+  }
+
+  /* Recipe Rows on Mobile */
+  .catalog-manager__recipe-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.65rem;
+    padding: 0.75rem;
+  }
+
+  .catalog-manager__recipe-select-wrap {
+    width: 100%;
+  }
+
+  .catalog-manager__recipe-row-actions {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .catalog-manager__recipe-units-wrap {
+    flex: 1;
+    min-width: 0;
+    width: auto;
+  }
+
+  .catalog-manager__recipe-stock-badge {
+    flex: 1.2;
+    min-width: 0;
+    justify-content: center;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 0.72rem;
+    padding: 0.5rem 0.35rem;
+  }
+
+  .catalog-manager__btn-remove-recipe-item {
+    width: 36px;
+    height: 36px;
+  }
+}

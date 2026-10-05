@@ -84,7 +84,7 @@ export const brand = {
 
   assets: {
     logo: '/brand/logo.png',
-    logoMark: '/brand/logo.png',
+    logoMark: '/brand/logoMark.png',
     favicon: '/brand/favicon.png',
     ogImage: '/brand/og-image.png',
     loginBackground: undefined,
@@ -107,13 +107,14 @@ export const brand = {
   },
 
   contact: {
-    phone: '+58 412-6545300',
+    phone: '+58 424-7217176',
+    // testing: '+58 412-6545300',
     instagram: '@tkenos.sc',
     address: 'Justo detrás de los bomberos, a mitad de cuesta subiendo el obelisco',
     city: 'San Cristóbal',
     country: 'Venezuela',
     openingHour: '8:00',
-    closingHour: '20:00',
+    closingHour: '22:00',
   },
 
   ticket: {

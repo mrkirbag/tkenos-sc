@@ -69,12 +69,18 @@ type OrderViewProps = {
 
 type CategoryFilter = string | 'all';
 
+type GroupFlavorState = {
+  mode: 'single' | 'half';
+  option1: string;
+  option2: string;
+};
+
 type AddItemForm = {
   product: Product;
   quantity: string;
   selections: Record<string, string[]>;
   adicionalIds: string[];
-  flavorSelections: Record<string, string>;
+  flavorStates: Record<string, GroupFlavorState>;
 };
 
 type ActingAction = 'add-item' | 'send-kitchen' | 'cancel' | 'deliver' | 'mark-ready';
@@ -409,22 +415,63 @@ function OrderView({ orderId, canDeliver = false }: OrderViewProps) {
     const selectedFlavors: OrderItemFlavor[] = [];
     if (addForm.product.flavor_groups && addForm.product.flavor_groups.length > 0) {
       for (const group of addForm.product.flavor_groups) {
-        const optionId = addForm.flavorSelections[group.id];
-        if (group.required && !optionId) {
-          setActionError(`Selecciona una opción para ${group.name.toLowerCase()}`);
-          return;
-        }
-        if (optionId) {
-          const option = group.options.find((o) => o.id === optionId);
-          if (option) {
-            selectedFlavors.push({
-              groupId: group.id,
-              groupName: group.name,
-              optionId: option.id,
-              optionName: option.name,
-              inventoryProductId: option.inventory_product_id ?? null,
-              units: group.units ?? 1,
-            });
+        const state = addForm.flavorStates[group.id] ?? { mode: 'single', option1: '', option2: '' };
+        const allowsHalf = (group.allow_half_and_half !== false) && (group.units >= 2);
+        const mode = allowsHalf ? state.mode : 'single';
+
+        if (mode === 'single') {
+          if (group.required && !state.option1) {
+            setActionError(`Selecciona un sabor para ${group.name.toLowerCase()}`);
+            return;
+          }
+          if (state.option1) {
+            const option = group.options.find((o) => o.id === state.option1);
+            if (option) {
+              selectedFlavors.push({
+                groupId: group.id,
+                groupName: allowsHalf ? `${group.name} (Completo)` : group.name,
+                optionId: option.id,
+                optionName: allowsHalf ? `${option.name} (${group.units} uds)` : option.name,
+                inventoryProductId: option.inventory_product_id ?? null,
+                units: group.units ?? 1,
+              });
+            }
+          }
+        } else {
+          const half1 = Math.ceil(group.units / 2);
+          const half2 = Math.floor(group.units / 2);
+
+          if (group.required && (!state.option1 || !state.option2)) {
+            setActionError(`Selecciona los 2 sabores para las mitades de ${group.name.toLowerCase()}`);
+            return;
+          }
+
+          if (state.option1) {
+            const opt1 = group.options.find((o) => o.id === state.option1);
+            if (opt1) {
+              selectedFlavors.push({
+                groupId: group.id,
+                groupName: `${group.name} (Mitad 1)`,
+                optionId: opt1.id,
+                optionName: `${opt1.name} (${half1} uds)`,
+                inventoryProductId: opt1.inventory_product_id ?? null,
+                units: half1,
+              });
+            }
+          }
+
+          if (state.option2) {
+            const opt2 = group.options.find((o) => o.id === state.option2);
+            if (opt2) {
+              selectedFlavors.push({
+                groupId: group.id,
+                groupName: `${group.name} (Mitad 2)`,
+                optionId: opt2.id,
+                optionName: `${opt2.name} (${half2} uds)`,
+                inventoryProductId: opt2.inventory_product_id ?? null,
+                units: half2,
+              });
+            }
           }
         }
       }
@@ -448,7 +495,7 @@ function OrderView({ orderId, canDeliver = false }: OrderViewProps) {
       if (product?.has_inventory && product.stock !== null && product.stock !== undefined) {
         if (product.stock < delta) {
           setActionError(
-            `No hay más unidades en inventario para ${item.product_name} (disponibles: ${product.stock})`
+            `No hay más unidades disponibles para ${item.product_name}`
           );
           return;
         }
@@ -624,12 +671,14 @@ function OrderView({ orderId, canDeliver = false }: OrderViewProps) {
                           setActionError(`El producto "${product.name}" está agotado en inventario.`);
                           return;
                         }
-                        const initialFlavors: Record<string, string> = {};
+                        const initialFlavorStates: Record<string, GroupFlavorState> = {};
                         if (product.flavor_groups) {
                           for (const fg of product.flavor_groups) {
-                            if (fg.options[0]) {
-                              initialFlavors[fg.id] = fg.options[0].id;
-                            }
+                            initialFlavorStates[fg.id] = {
+                              mode: 'single',
+                              option1: fg.required && fg.options[0] ? fg.options[0].id : '',
+                              option2: fg.required && fg.options[1] ? fg.options[1].id : (fg.required && fg.options[0] ? fg.options[0].id : ''),
+                            };
                           }
                         }
                         setAddForm({
@@ -637,7 +686,7 @@ function OrderView({ orderId, canDeliver = false }: OrderViewProps) {
                           quantity: '1',
                           selections: getDefaultSelections(product.category),
                           adicionalIds: [],
-                          flavorSelections: initialFlavors,
+                          flavorStates: initialFlavorStates,
                         });
                         setActionError('');
                       }}
@@ -646,15 +695,11 @@ function OrderView({ orderId, canDeliver = false }: OrderViewProps) {
                       <span className="order-view__product-category">
                         {getMenuCategoryLabel(product.category)}
                       </span>
-                      {product.has_inventory &&
-                        product.stock !== null &&
-                        product.stock !== undefined && (
-                          <span
-                            className={`order-view__stock-badge${isOutOfStock ? ' order-view__stock-badge--empty' : ''}`}
-                          >
-                            {isOutOfStock ? 'Agotado' : `Stock: ${product.stock}`}
-                          </span>
-                        )}
+                      {isOutOfStock && (
+                        <span className="order-view__stock-badge order-view__stock-badge--empty">
+                          Agotado
+                        </span>
+                      )}
                       <span className="order-view__product-price">
                         <MultiCurrencyPrice amountCop={product.price} rates={rates} />
                       </span>
@@ -784,7 +829,7 @@ function OrderView({ orderId, canDeliver = false }: OrderViewProps) {
                             onClick={() => updateItemQuantity(item, 1)}
                             disabled={isItemActing || cannotIncrease}
                             aria-label="Aumentar cantidad"
-                            title={cannotIncrease ? 'No hay más stock disponible en inventario' : undefined}
+                            title={cannotIncrease ? 'No hay más unidades disponibles' : undefined}
                           >
                             {isItemActing ? (
                               <Loader2 className="order-view__spin" size={14} />
@@ -1148,18 +1193,12 @@ function OrderView({ orderId, canDeliver = false }: OrderViewProps) {
               />
               {addForm.product.has_inventory &&
                 addForm.product.stock !== null &&
-                addForm.product.stock !== undefined && (
+                addForm.product.stock !== undefined &&
+                addForm.product.stock <= 0 && (
                   <span className="order-view__field-hint">
-                    {addForm.product.stock <= 0 ? (
-                      <span style={{ color: '#ef4444', fontWeight: 600 }}>
-                        ⚠️ Producto sin stock en inventario
-                      </span>
-                    ) : (
-                      <span>
-                        Disponible en inventario: <strong>{addForm.product.stock}</strong>{' '}
-                        {addForm.product.stock === 1 ? 'unidad' : 'unidades'}
-                      </span>
-                    )}
+                    <span style={{ color: '#ef4444', fontWeight: 600 }}>
+                      ⚠️ Producto sin stock disponible
+                    </span>
                   </span>
                 )}
             </label>
@@ -1167,41 +1206,212 @@ function OrderView({ orderId, canDeliver = false }: OrderViewProps) {
             {addForm.product.flavor_groups && addForm.product.flavor_groups.length > 0 && (
               <div className="order-view__flavors-picker">
                 {addForm.product.flavor_groups.map((group) => {
-                  const selectedOptionId = addForm.flavorSelections[group.id];
+                  const state = addForm.flavorStates[group.id] ?? { mode: 'single', option1: '', option2: '' };
+                  const allowsHalf = (group.allow_half_and_half !== false) && (group.units >= 2);
+                  const half1 = Math.ceil(group.units / 2);
+                  const half2 = Math.floor(group.units / 2);
+
                   return (
                     <fieldset key={group.id} className="order-view__field order-view__note-options">
                       <legend>
-                        {group.name} {group.units ? `(${group.units} uds.)` : ''} {group.required ? '· Obligatorio' : '· Opcional'}
+                        {group.name} {group.units ? `(${group.units} piezas)` : ''} {group.required ? '· Obligatorio' : '· Opcional'}
                       </legend>
-                      <div className="order-view__note-options-grid" role="radiogroup" aria-label={group.name}>
-                        {group.options.map((opt) => {
-                          const isSelected = selectedOptionId === opt.id;
-                          return (
-                            <button
-                              key={opt.id}
-                              type="button"
-                              role="radio"
-                              aria-checked={isSelected}
-                              className={`order-view__note-option${isSelected ? ' order-view__note-option--selected' : ''}`}
-                              onClick={() =>
-                                setAddForm((prev) =>
-                                  prev
-                                    ? {
-                                        ...prev,
-                                        flavorSelections: {
-                                          ...prev.flavorSelections,
-                                          [group.id]: opt.id,
+
+                      {allowsHalf && (
+                        <div className="order-view__flavor-mode-tabs" role="tablist">
+                          <button
+                            type="button"
+                            role="tab"
+                            aria-selected={state.mode === 'single'}
+                            className={`order-view__flavor-mode-tab${state.mode === 'single' ? ' order-view__flavor-mode-tab--active' : ''}`}
+                            onClick={() =>
+                              setAddForm((prev) =>
+                                prev
+                                  ? {
+                                      ...prev,
+                                      flavorStates: {
+                                        ...prev.flavorStates,
+                                        [group.id]: { ...state, mode: 'single' },
+                                      },
+                                    }
+                                  : prev
+                              )
+                            }
+                          >
+                            Todo Completo ({group.units} uds)
+                          </button>
+                          <button
+                            type="button"
+                            role="tab"
+                            aria-selected={state.mode === 'half'}
+                            className={`order-view__flavor-mode-tab${state.mode === 'half' ? ' order-view__flavor-mode-tab--active' : ''}`}
+                            onClick={() =>
+                              setAddForm((prev) =>
+                                prev
+                                  ? {
+                                      ...prev,
+                                      flavorStates: {
+                                        ...prev.flavorStates,
+                                        [group.id]: {
+                                          ...state,
+                                          mode: 'half',
+                                          option2: state.option2 || (group.options[1]?.id ?? state.option1),
                                         },
-                                      }
-                                    : prev,
-                                )
-                              }
-                            >
-                              {opt.name}
-                            </button>
-                          );
-                        })}
-                      </div>
+                                      },
+                                    }
+                                  : prev
+                              )
+                            }
+                          >
+                            Mitad y Mitad ({half1} / {half2} uds)
+                          </button>
+                        </div>
+                      )}
+
+                      {(!allowsHalf || state.mode === 'single') ? (
+                        <div className="order-view__flavor-subsection">
+                          {allowsHalf && (
+                            <div className="order-view__flavor-subheading">
+                              <span>Sabor para las {group.units} unidades:</span>
+                            </div>
+                          )}
+                          <div className="order-view__note-options-grid" role="radiogroup" aria-label={group.name}>
+                            {!group.required && (
+                              <button
+                                type="button"
+                                role="radio"
+                                aria-checked={!state.option1}
+                                className={`order-view__note-option${!state.option1 ? ' order-view__note-option--selected' : ''}`}
+                                onClick={() =>
+                                  setAddForm((prev) =>
+                                    prev
+                                      ? {
+                                          ...prev,
+                                          flavorStates: {
+                                            ...prev.flavorStates,
+                                            [group.id]: { ...state, option1: '' },
+                                          },
+                                        }
+                                      : prev
+                                  )
+                                }
+                              >
+                                Sin preferencia
+                              </button>
+                            )}
+                            {group.options.map((opt) => {
+                              const isSelected = state.option1 === opt.id;
+                              return (
+                                <button
+                                  key={opt.id}
+                                  type="button"
+                                  role="radio"
+                                  aria-checked={isSelected}
+                                  className={`order-view__note-option${isSelected ? ' order-view__note-option--selected' : ''}`}
+                                  onClick={() =>
+                                    setAddForm((prev) =>
+                                      prev
+                                        ? {
+                                            ...prev,
+                                            flavorStates: {
+                                              ...prev.flavorStates,
+                                              [group.id]: {
+                                                ...state,
+                                                option1: isSelected && !group.required ? '' : opt.id,
+                                              },
+                                            },
+                                          }
+                                        : prev
+                                    )
+                                  }
+                                >
+                                  {opt.name}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="order-view__flavor-halves-container">
+                          <div className="order-view__flavor-subsection">
+                            <div className="order-view__flavor-subheading">
+                              <span className="order-view__flavor-half-badge">1ª Mitad</span>
+                              <span>{half1} unidades:</span>
+                            </div>
+                            <div className="order-view__note-options-grid" role="radiogroup" aria-label="Primera mitad">
+                              {group.options.map((opt) => {
+                                const isSelected = state.option1 === opt.id;
+                                return (
+                                  <button
+                                    key={opt.id}
+                                    type="button"
+                                    role="radio"
+                                    aria-checked={isSelected}
+                                    className={`order-view__note-option${isSelected ? ' order-view__note-option--selected' : ''}`}
+                                    onClick={() =>
+                                      setAddForm((prev) =>
+                                        prev
+                                          ? {
+                                              ...prev,
+                                              flavorStates: {
+                                                ...prev.flavorStates,
+                                                [group.id]: {
+                                                  ...state,
+                                                  option1: opt.id,
+                                                },
+                                              },
+                                            }
+                                          : prev
+                                      )
+                                    }
+                                  >
+                                    {opt.name}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+
+                          <div className="order-view__flavor-subsection">
+                            <div className="order-view__flavor-subheading">
+                              <span className="order-view__flavor-half-badge">2ª Mitad</span>
+                              <span>{half2} unidades:</span>
+                            </div>
+                            <div className="order-view__note-options-grid" role="radiogroup" aria-label="Segunda mitad">
+                              {group.options.map((opt) => {
+                                const isSelected = state.option2 === opt.id;
+                                return (
+                                  <button
+                                    key={opt.id}
+                                    type="button"
+                                    role="radio"
+                                    aria-checked={isSelected}
+                                    className={`order-view__note-option${isSelected ? ' order-view__note-option--selected' : ''}`}
+                                    onClick={() =>
+                                      setAddForm((prev) =>
+                                        prev
+                                          ? {
+                                              ...prev,
+                                              flavorStates: {
+                                                ...prev.flavorStates,
+                                                [group.id]: {
+                                                  ...state,
+                                                  option2: opt.id,
+                                                },
+                                              },
+                                            }
+                                          : prev
+                                      )
+                                    }
+                                  >
+                                    {opt.name}
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </fieldset>
                   );
                 })}

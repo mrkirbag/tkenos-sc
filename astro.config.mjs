@@ -24,6 +24,18 @@ export default defineConfig({
       alias: {
         '@': '/src'
       }
+    },
+    optimizeDeps: {
+      include: [
+        '@tanstack/react-query',
+        'react',
+        'react-dom',
+        'react/jsx-runtime',
+        'react/jsx-dev-runtime',
+        'lucide-react',
+        'clsx',
+        'recharts',
+      ]
     }
   }
 });

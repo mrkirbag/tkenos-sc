@@ -13,6 +13,7 @@ const rates: ExchangeRates = {
   id: 'default',
   usd_rate: 4000,
   bs_rate: 50,
+  extra_box_cost: 0,
   updated_at: '2026-01-01T00:00:00.000Z',
   updated_by: null,
 };

@@ -39,6 +39,7 @@ export const PATCH: APIRoute = async (context) => {
     active?: boolean;
     inventory_product_id?: string | null;
     inventory_units_per_sale?: number;
+    inventory_items?: any;
     flavor_groups?: any;
   };
 
@@ -82,6 +83,7 @@ export const PATCH: APIRoute = async (context) => {
       active,
       inventory_product_id: body.inventory_product_id,
       inventory_units_per_sale: body.inventory_units_per_sale,
+      inventory_items: body.inventory_items,
       flavor_groups: body.flavor_groups,
     });
 

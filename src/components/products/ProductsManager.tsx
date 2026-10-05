@@ -26,6 +26,12 @@ import './ProductsManager.css';
 type FormMode = 'create' | 'edit';
 type CategoryFilter = string | 'all';
 
+export type FormInventoryItem = {
+  id: string;
+  inventory_product_id: string;
+  units: string;
+};
+
 type ProductFormState = {
   name: string;
   price: string;
@@ -33,8 +39,7 @@ type ProductFormState = {
   image_url: string;
   description: string;
   active: boolean;
-  inventory_product_id: string;
-  inventory_units_per_sale: string;
+  inventory_items: FormInventoryItem[];
   flavor_groups: ProductFlavorGroup[];
 };
 
@@ -45,8 +50,7 @@ const emptyForm: ProductFormState = {
   image_url: '',
   description: '',
   active: true,
-  inventory_product_id: '',
-  inventory_units_per_sale: '1',
+  inventory_items: [],
   flavor_groups: [],
 };
 
@@ -142,6 +146,23 @@ function ProductsManager() {
   function openEditForm(product: CatalogProduct) {
     setFormMode('edit');
     setEditingProduct(product);
+    let initialInventoryItems: FormInventoryItem[] = [];
+    if (product.inventory_items && product.inventory_items.length > 0) {
+      initialInventoryItems = product.inventory_items.map((it, idx) => ({
+        id: `inv_item_${idx}_${Date.now()}`,
+        inventory_product_id: it.inventory_product_id,
+        units: String(it.units),
+      }));
+    } else if (product.inventory_product_id) {
+      initialInventoryItems = [
+        {
+          id: `inv_item_0_${Date.now()}`,
+          inventory_product_id: product.inventory_product_id,
+          units: String(product.inventory_units_per_sale ?? 1),
+        },
+      ];
+    }
+
     setForm({
       name: product.name,
       price: String(product.price),
@@ -149,21 +170,52 @@ function ProductsManager() {
       image_url: product.image_url ?? '',
       description: product.description ?? '',
       active: product.active,
-      inventory_product_id: product.inventory_product_id ?? '',
-      inventory_units_per_sale: String(product.inventory_units_per_sale ?? 1),
+      inventory_items: initialInventoryItems,
       flavor_groups: product.flavor_groups ?? [],
     });
     setFormError('');
   }
 
+  function handleAddInventoryItem() {
+    setForm((prev) => ({
+      ...prev,
+      inventory_items: [
+        ...prev.inventory_items,
+        {
+          id: `inv_item_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+          inventory_product_id: '',
+          units: '1',
+        },
+      ],
+    }));
+  }
+
+  function handleRemoveInventoryItem(id: string) {
+    setForm((prev) => ({
+      ...prev,
+      inventory_items: prev.inventory_items.filter((item) => item.id !== id),
+    }));
+  }
+
+  function handleUpdateInventoryItem(id: string, updates: Partial<FormInventoryItem>) {
+    setForm((prev) => ({
+      ...prev,
+      inventory_items: prev.inventory_items.map((item) =>
+        item.id === id ? { ...item, ...updates } : item,
+      ),
+    }));
+  }
+
   function handleAddFlavorGroup() {
     const newGroup: ProductFlavorGroup = {
       id: `fg_${Date.now()}`,
-      name: '',
-      units: 1,
+      name: 'Sabor de Tequeños',
+      units: 24,
       required: true,
+      allow_half_and_half: true,
       options: [
-        { id: `opt_${Date.now()}_1`, name: '', inventory_product_id: null },
+        { id: `opt_${Date.now()}_1`, name: 'Queso Tradicional', inventory_product_id: null },
+        { id: `opt_${Date.now()}_2`, name: 'Jamón y Queso', inventory_product_id: null },
       ],
     };
     setForm((prev) => ({
@@ -274,11 +326,18 @@ function ProductsManager() {
     event.preventDefault();
     setFormError('');
     const price = Number(form.price);
+
+    const cleanedInventoryItems = form.inventory_items
+      .filter((it) => it.inventory_product_id.trim().length > 0)
+      .map((it) => ({
+        inventory_product_id: it.inventory_product_id.trim(),
+        units: Math.max(1, Math.floor(Number(it.units) || 1)),
+      }));
+
     const inventoryBody = {
-      inventory_product_id: form.inventory_product_id || null,
-      inventory_units_per_sale: form.inventory_product_id
-        ? Math.max(1, Number(form.inventory_units_per_sale) || 1)
-        : 1,
+      inventory_items: cleanedInventoryItems.length > 0 ? cleanedInventoryItems : null,
+      inventory_product_id: cleanedInventoryItems[0]?.inventory_product_id || null,
+      inventory_units_per_sale: cleanedInventoryItems[0]?.units || 1,
     };
 
     const cleanedFlavorGroups = form.flavor_groups
@@ -445,17 +504,27 @@ function ProductsManager() {
                       <div>
                         <span className="catalog-manager__name">{product.name}</span>
                         {product.description && <span className="catalog-manager__description-text">{product.description}</span>}
-                        {product.inventory_item_name && (
+                        {product.inventory_items && product.inventory_items.length > 0 ? (
+                          <span className="catalog-manager__inventory-link">
+                            Descuenta ({product.inventory_items.length}):{' '}
+                            {product.inventory_items
+                              .map((it) => {
+                                const inv = inventoryItems.find((x) => x.id === it.inventory_product_id);
+                                return `${it.units > 1 ? `${it.units}× ` : ''}${inv ? inv.name : 'Insumo'}`;
+                              })
+                              .join(', ')}
+                          </span>
+                        ) : product.inventory_item_name ? (
                           <span className="catalog-manager__inventory-link">
                             Inventario: {product.inventory_item_name}
                             {product.inventory_units_per_sale > 1
                               ? ` (×${product.inventory_units_per_sale})`
                               : ''}
                           </span>
-                        )}
+                        ) : null}
                         {product.flavor_groups && product.flavor_groups.length > 0 && (
                           <span className="catalog-manager__inventory-link catalog-manager__flavor-badge">
-                            Combos/Sabores: {product.flavor_groups.map((g) => `${g.name} (${g.options.length} opciones)`).join(', ')}
+                            Sabores opcionales: {product.flavor_groups.map((g) => `${g.name} (${g.options.length} opciones)`).join(', ')}
                           </span>
                         )}
                       </div>
@@ -589,117 +658,165 @@ function ProductsManager() {
             />
           </div>
 
-          <div className="catalog-manager__field">
-            <label htmlFor="product-price">Precio ({brand.currency.code})</label>
-            <input
-              id="product-price"
-              type="number"
-              step={brand.currency.code === 'COP' ? '1' : '0.01'}
-              min="0"
-              value={form.price}
-              onChange={(event) => setForm((prev) => ({ ...prev, price: event.target.value }))}
-              placeholder="0.00"
-              required
-              disabled={saveMutation.isPending}
-            />
-          </div>
-
-          <div className="catalog-manager__field">
-            <label htmlFor="product-category">Categoría</label>
-            <select
-              id="product-category"
-              value={form.category}
-              onChange={(event) =>
-                setForm((prev) => ({
-                  ...prev,
-                  category: event.target.value,
-                }))
-              }
-              disabled={saveMutation.isPending}
-            >
-              {menuCategories.map((category) => (
-                <option key={category.id} value={category.id}>
-                  {category.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="catalog-manager__field">
-            <label htmlFor="product-inventory">
-              Ítem de inventario <span className="catalog-manager__hint">(opcional)</span>
-            </label>
-            <select
-              id="product-inventory"
-              value={form.inventory_product_id}
-              onChange={(event) =>
-                setForm((prev) => ({ ...prev, inventory_product_id: event.target.value }))
-              }
-              disabled={saveMutation.isPending}
-            >
-              <option value="">Sin vínculo (no descuenta stock)</option>
-              {menuCategories.map((cat) => {
-                const catItems = inventoryItems.filter((item) => item.category === cat.id);
-                if (catItems.length === 0) return null;
-                return (
-                  <optgroup key={cat.id} label={cat.label}>
-                    {catItems.map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {item.name} — {item.stock} {getInventoryUnitLabel(item.unit).toLowerCase()}
-                      </option>
-                    ))}
-                  </optgroup>
-                );
-              })}
-              {(() => {
-                const knownCategoryIds = new Set(menuCategories.map((c) => c.id));
-                const otherItems = inventoryItems.filter(
-                  (item) => !knownCategoryIds.has(item.category),
-                );
-                if (otherItems.length === 0) return null;
-                return (
-                  <optgroup label="Otros insumos">
-                    {otherItems.map((item) => (
-                      <option key={item.id} value={item.id}>
-                        {item.name} — {item.stock} {getInventoryUnitLabel(item.unit).toLowerCase()} (
-                        {getInventoryCategoryLabel(item.category)})
-                      </option>
-                    ))}
-                  </optgroup>
-                );
-              })()}
-            </select>
-          </div>
-
-          {form.inventory_product_id && (
+          <div className="catalog-manager__form-row-2">
             <div className="catalog-manager__field">
-              <label htmlFor="product-inventory-units">Unidades de inventario por venta</label>
+              <label htmlFor="product-price">Precio ({brand.currency.code})</label>
               <input
-                id="product-inventory-units"
+                id="product-price"
                 type="number"
-                min="1"
-                step="1"
-                value={form.inventory_units_per_sale}
-                onChange={(event) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    inventory_units_per_sale: event.target.value,
-                  }))
-                }
+                step={brand.currency.code === 'COP' ? '1' : '0.01'}
+                min="0"
+                value={form.price}
+                onChange={(event) => setForm((prev) => ({ ...prev, price: event.target.value }))}
+                placeholder="0.00"
+                required
                 disabled={saveMutation.isPending}
               />
             </div>
-          )}
+
+            <div className="catalog-manager__field">
+              <label htmlFor="product-category">Categoría</label>
+              <select
+                id="product-category"
+                value={form.category}
+                onChange={(event) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    category: event.target.value,
+                  }))
+                }
+                disabled={saveMutation.isPending}
+              >
+                {menuCategories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* INSUMOS A DESCONTAR (RECETA / BOM) */}
+          <div className="catalog-manager__recipe-section">
+            <div className="catalog-manager__recipe-header">
+              <div>
+                <label className="catalog-manager__recipe-title">
+                  Insumos fijos a descontar <span className="catalog-manager__hint">(opcional)</span>
+                </label>
+                <p className="catalog-manager__recipe-subtitle">
+                  Agrega todos los ítems de inventario que se descuentan al vender este producto (ej: 1 caja, 1 bolsa, 1 salsa, tequeños base). Se descontarán siempre con cada venta.
+                </p>
+              </div>
+              <button
+                type="button"
+                className="catalog-manager__btn-add-recipe-item"
+                onClick={handleAddInventoryItem}
+                disabled={saveMutation.isPending}
+              >
+                <Plus size={15} />
+                <span>Agregar Insumo</span>
+              </button>
+            </div>
+
+            {form.inventory_items.length === 0 ? (
+              <div className="catalog-manager__recipe-empty">
+                Sin insumos fijos vinculados. (Haz clic en "+ Agregar Insumo" para configurar cajas, bolsas, salsas, etc.)
+              </div>
+            ) : (
+              <div className="catalog-manager__recipe-list">
+                {form.inventory_items.map((item, index) => {
+                  const selectedInv = inventoryItems.find((inv) => inv.id === item.inventory_product_id);
+                  return (
+                    <div key={item.id} className="catalog-manager__recipe-row">
+                      <div className="catalog-manager__recipe-select-wrap">
+                        <label className="catalog-manager__recipe-col-label">Insumo #{index + 1}</label>
+                        <select
+                          value={item.inventory_product_id}
+                          onChange={(e) =>
+                            handleUpdateInventoryItem(item.id, { inventory_product_id: e.target.value })
+                          }
+                          disabled={saveMutation.isPending}
+                          required
+                        >
+                          <option value="">Selecciona un insumo...</option>
+                          {menuCategories.map((cat) => {
+                            const catItems = inventoryItems.filter((i) => i.category === cat.id);
+                            if (catItems.length === 0) return null;
+                            return (
+                              <optgroup key={cat.id} label={cat.label}>
+                                {catItems.map((inv) => (
+                                  <option key={inv.id} value={inv.id}>
+                                    {inv.name} — {inv.stock} {getInventoryUnitLabel(inv.unit).toLowerCase()}
+                                  </option>
+                                ))}
+                              </optgroup>
+                            );
+                          })}
+                          {(() => {
+                            const knownCategoryIds = new Set(menuCategories.map((c) => c.id));
+                            const otherItems = inventoryItems.filter((i) => !knownCategoryIds.has(i.category));
+                            if (otherItems.length === 0) return null;
+                            return (
+                              <optgroup label="Otros insumos">
+                                {otherItems.map((inv) => (
+                                  <option key={inv.id} value={inv.id}>
+                                    {inv.name} — {inv.stock} {getInventoryUnitLabel(inv.unit).toLowerCase()} ({getInventoryCategoryLabel(inv.category)})
+                                  </option>
+                                ))}
+                              </optgroup>
+                            );
+                          })()}
+                        </select>
+                      </div>
+
+                      <div className="catalog-manager__recipe-row-actions">
+                        <div className="catalog-manager__recipe-units-wrap">
+                          <label className="catalog-manager__recipe-col-label">Cant.</label>
+                          <input
+                            type="number"
+                            min="1"
+                            step="1"
+                            placeholder="1"
+                            value={item.units}
+                            onChange={(e) => handleUpdateInventoryItem(item.id, { units: e.target.value })}
+                            disabled={saveMutation.isPending}
+                            required
+                          />
+                        </div>
+
+                        {selectedInv && (
+                          <div className="catalog-manager__recipe-stock-badge" title={`Stock disponible: ${selectedInv.stock}`}>
+                            Stock: {selectedInv.stock} {getInventoryUnitLabel(selectedInv.unit).toLowerCase()}
+                          </div>
+                        )}
+
+                        <button
+                          type="button"
+                          className="catalog-manager__btn-remove-recipe-item"
+                          onClick={() => handleRemoveInventoryItem(item.id)}
+                          disabled={saveMutation.isPending}
+                          title="Eliminar insumo"
+                          aria-label={`Eliminar insumo #${index + 1}`}
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
 
           {/* FLAVOR GROUPS (COMBOS) SECTION */}
           <div className="catalog-manager__flavors-section">
             <div className="catalog-manager__flavors-header">
               <div>
                 <label className="catalog-manager__flavors-title">
-                  Grupos de Sabores (para Combos o selección de sabor)
+                  Sabores y Combos <span className="catalog-manager__hint">(opcional)</span>
                 </label>
                 <p className="catalog-manager__flavors-subtitle">
-                  Configura los sabores a elegir (ej: 10 tequeños de queso o bocadillo) y asocia cada sabor a su ítem de inventario para descontar stock exacto.
+                  Úsalo únicamente para combos o productos específicos que permiten elegir sabores (ej. Combo 24 tequeños). Permite configurar si el cliente puede pedir <strong>Todo Completo</strong> (un solo sabor) o <strong>Mitad y Mitad</strong> (dos sabores).
                 </p>
               </div>
               <button
@@ -707,20 +824,40 @@ function ProductsManager() {
                 className="catalog-manager__btn-add-group"
                 onClick={handleAddFlavorGroup}
               >
-                <Plus size={14} />
-                <span>Agregar Grupo</span>
+                <Plus size={15} />
+                <span>Agregar Sabores de Combo</span>
               </button>
             </div>
 
             {form.flavor_groups.length === 0 ? (
               <div className="catalog-manager__flavors-empty">
-                Sin grupos de sabores configurados. (Opcional: Si este producto es un combo o permite elegir sabores, haz clic en "Agregar Grupo").
+                Sin configuración de sabores. (Déjalo vacío para productos simples. Agrégalo solo si es un combo como 24 o 12 tequeños).
               </div>
             ) : (
               <div className="catalog-manager__flavor-groups-list">
-                {form.flavor_groups.map((group) => (
-                  <div key={group.id} className="catalog-manager__flavor-group-card">
-                    <div className="catalog-manager__flavor-group-top">
+                {form.flavor_groups.map((group, groupIndex) => {
+                  const allowsHalf = group.allow_half_and_half ?? (group.units >= 2);
+                  const half1 = Math.ceil(group.units / 2);
+                  const half2 = Math.floor(group.units / 2);
+
+                  return (
+                    <div key={group.id} className="catalog-manager__flavor-group-card">
+                      <div className="catalog-manager__flavor-group-card-header">
+                        <span className="catalog-manager__flavor-group-badge">
+                          Grupo #{groupIndex + 1}
+                        </span>
+                        <button
+                          type="button"
+                          className="catalog-manager__btn-remove-group"
+                          onClick={() => handleRemoveFlavorGroup(group.id)}
+                          title="Eliminar grupo"
+                          aria-label={`Eliminar grupo #${groupIndex + 1}`}
+                        >
+                          <Trash2 size={15} />
+                          <span className="catalog-manager__btn-remove-group-text">Eliminar grupo</span>
+                        </button>
+                      </div>
+
                       <div className="catalog-manager__flavor-group-inputs">
                         <div className="catalog-manager__group-field">
                           <label>Nombre del Grupo</label>
@@ -736,11 +873,11 @@ function ProductsManager() {
                         </div>
 
                         <div className="catalog-manager__group-field catalog-manager__group-field--units">
-                          <label>Uds. a descontar</label>
+                          <label>Total piezas del combo</label>
                           <input
                             type="number"
                             min="1"
-                            placeholder="Ej. 10"
+                            placeholder="Ej. 24"
                             value={group.units}
                             onChange={(e) =>
                               handleUpdateFlavorGroup(group.id, {
@@ -750,8 +887,23 @@ function ProductsManager() {
                             required
                           />
                         </div>
+                      </div>
 
-                        <label className="catalog-manager__group-required">
+                      <div className="catalog-manager__group-toggles">
+                        <label className="catalog-manager__group-checkbox">
+                          <input
+                            type="checkbox"
+                            checked={allowsHalf}
+                            onChange={(e) =>
+                              handleUpdateFlavorGroup(group.id, { allow_half_and_half: e.target.checked })
+                            }
+                          />
+                          <span>
+                            Permitir Mitad y Mitad {group.units >= 2 ? `(${half1} y ${half2} uds)` : ''}
+                          </span>
+                        </label>
+
+                        <label className="catalog-manager__group-checkbox">
                           <input
                             type="checkbox"
                             checked={group.required}
@@ -759,82 +911,78 @@ function ProductsManager() {
                               handleUpdateFlavorGroup(group.id, { required: e.target.checked })
                             }
                           />
-                          <span>Obligatorio</span>
+                          <span>Selección obligatoria</span>
                         </label>
                       </div>
 
-                      <button
-                        type="button"
-                        className="catalog-manager__btn-remove-group"
-                        onClick={() => handleRemoveFlavorGroup(group.id)}
-                        title="Eliminar grupo"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
+                      <div className="catalog-manager__flavor-options-wrap">
+                        <span className="catalog-manager__flavor-options-label">
+                          Opciones de este grupo:
+                        </span>
 
-                    <div className="catalog-manager__flavor-options-wrap">
-                      <span className="catalog-manager__flavor-options-label">
-                        Opciones de este grupo:
-                      </span>
+                        <div className="catalog-manager__flavor-options-list">
+                          {group.options.map((opt, optIndex) => (
+                            <div key={opt.id} className="catalog-manager__flavor-option-row">
+                              <div className="catalog-manager__option-name-wrap">
+                                <input
+                                  type="text"
+                                  className="catalog-manager__option-name-input"
+                                  placeholder={`Opción #${optIndex + 1} (ej. Queso)`}
+                                  value={opt.name}
+                                  onChange={(e) =>
+                                    handleUpdateFlavorOption(group.id, opt.id, {
+                                      name: e.target.value,
+                                    })
+                                  }
+                                  required
+                                />
+                              </div>
 
-                      <div className="catalog-manager__flavor-options-list">
-                        {group.options.map((opt) => (
-                          <div key={opt.id} className="catalog-manager__flavor-option-row">
-                            <input
-                              type="text"
-                              className="catalog-manager__option-name-input"
-                              placeholder="Nombre (ej. Queso)"
-                              value={opt.name}
-                              onChange={(e) =>
-                                handleUpdateFlavorOption(group.id, opt.id, {
-                                  name: e.target.value,
-                                })
-                              }
-                              required
-                            />
+                              <div className="catalog-manager__option-inventory-wrap">
+                                <select
+                                  className="catalog-manager__option-inventory-select"
+                                  value={opt.inventory_product_id ?? ''}
+                                  onChange={(e) =>
+                                    handleUpdateFlavorOption(group.id, opt.id, {
+                                      inventory_product_id: e.target.value || null,
+                                    })
+                                  }
+                                >
+                                  <option value="">Sin descuento de inventario</option>
+                                  {inventoryItems.map((item) => (
+                                    <option key={item.id} value={item.id}>
+                                      {item.name} ({item.stock} {getInventoryUnitLabel(item.unit).toLowerCase()})
+                                    </option>
+                                  ))}
+                                </select>
+                              </div>
 
-                            <select
-                              className="catalog-manager__option-inventory-select"
-                              value={opt.inventory_product_id ?? ''}
-                              onChange={(e) =>
-                                handleUpdateFlavorOption(group.id, opt.id, {
-                                  inventory_product_id: e.target.value || null,
-                                })
-                              }
-                            >
-                              <option value="">Sin descuento de inventario</option>
-                              {inventoryItems.map((item) => (
-                                <option key={item.id} value={item.id}>
-                                  {item.name} ({item.stock} {getInventoryUnitLabel(item.unit).toLowerCase()})
-                                </option>
-                              ))}
-                            </select>
+                              <button
+                                type="button"
+                                className="catalog-manager__btn-remove-opt"
+                                onClick={() => handleRemoveFlavorOption(group.id, opt.id)}
+                                disabled={group.options.length <= 1}
+                                title="Eliminar opción"
+                                aria-label="Eliminar opción"
+                              >
+                                <X size={15} />
+                              </button>
+                            </div>
+                          ))}
+                        </div>
 
-                            <button
-                              type="button"
-                              className="catalog-manager__btn-remove-opt"
-                              onClick={() => handleRemoveFlavorOption(group.id, opt.id)}
-                              disabled={group.options.length <= 1}
-                              title="Eliminar opción"
-                            >
-                              <X size={14} />
-                            </button>
-                          </div>
-                        ))}
+                        <button
+                          type="button"
+                          className="catalog-manager__btn-add-opt"
+                          onClick={() => handleAddFlavorOption(group.id)}
+                        >
+                          <Plus size={14} />
+                          <span>Agregar Opción</span>
+                        </button>
                       </div>
-
-                      <button
-                        type="button"
-                        className="catalog-manager__btn-add-opt"
-                        onClick={() => handleAddFlavorOption(group.id)}
-                      >
-                        <Plus size={13} />
-                        <span>Agregar Opción</span>
-                      </button>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

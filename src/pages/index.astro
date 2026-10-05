@@ -46,44 +46,44 @@ const structuredData = {
     {
       "@type": "FastFoodRestaurant",
       "@id": `${siteUrl}/#restaurant`,
-      "name": brand.name,
-      "alternateName": [
+      name: brand.name,
+      alternateName: [
         "Tkeños SC",
         "Tkenos SC",
         "T-KEÑOS",
         "xn--tkeos-sc-f3a.com",
       ],
-      "url": siteUrl,
-      "logo": logoUrl,
-      "image": [ogImageUrl, logoUrl],
-      "description": brand.tagline,
-      "telephone": brand.contact.phone,
-      "priceRange": "$$",
-      "servesCuisine": [
+      url: siteUrl,
+      logo: logoUrl,
+      image: [ogImageUrl, logoUrl],
+      description: brand.tagline,
+      telephone: brand.contact.phone,
+      priceRange: "$$",
+      servesCuisine: [
         "Venezolana",
         "Tequeños",
         "Comida Rápida",
         "Pasapalos",
         "Pastelitos",
       ],
-      "currenciesAccepted": "COP, USD, VES",
-      "paymentAccepted": "Efectivo, Pago Móvil, Transferencia Bancaria",
-      "address": {
+      currenciesAccepted: "COP, USD, VES",
+      paymentAccepted: "Efectivo, Pago Móvil, Transferencia Bancaria",
+      address: {
         "@type": "PostalAddress",
-        "streetAddress": brand.contact.address,
-        "addressLocality": brand.contact.city,
-        "addressRegion": "Táchira",
-        "addressCountry": "VE",
+        streetAddress: brand.contact.address,
+        addressLocality: brand.contact.city,
+        addressRegion: "Táchira",
+        addressCountry: "VE",
       },
-      "geo": {
+      geo: {
         "@type": "GeoCoordinates",
-        "latitude": 7.7669,
-        "longitude": -72.225,
+        latitude: 7.7669,
+        longitude: -72.225,
       },
-      "openingHoursSpecification": [
+      openingHoursSpecification: [
         {
           "@type": "OpeningHoursSpecification",
-          "dayOfWeek": [
+          dayOfWeek: [
             "Monday",
             "Tuesday",
             "Wednesday",
@@ -92,24 +92,24 @@ const structuredData = {
             "Saturday",
             "Sunday",
           ],
-          "opens": brand.contact.openingHour || "08:00",
-          "closes": brand.contact.closingHour || "20:00",
+          opens: brand.contact.openingHour || "08:00",
+          closes: brand.contact.closingHour || "20:00",
         },
       ],
-      "hasMenu": `${siteUrl}/#menu-sections`,
-      "sameAs": ["https://www.instagram.com/tkenos.sc"],
-      "potentialAction": {
+      hasMenu: `${siteUrl}/#menu-sections`,
+      sameAs: ["https://www.instagram.com/tkenos.sc"],
+      potentialAction: {
         "@type": "OrderAction",
-        "target": {
+        target: {
           "@type": "EntryPoint",
-          "urlTemplate": siteUrl,
-          "inLanguage": "es",
-          "actionPlatform": [
+          urlTemplate: siteUrl,
+          inLanguage: "es",
+          actionPlatform: [
             "http://schema.org/DesktopWebPlatform",
             "http://schema.org/MobileWebPlatform",
           ],
         },
-        "deliveryMethod": [
+        deliveryMethod: [
           "http://purl.org/goodrelations/v1#DeliveryModePickUp",
           "http://purl.org/goodrelations/v1#DeliveryModeOwnFleet",
         ],
@@ -118,35 +118,35 @@ const structuredData = {
     {
       "@type": "WebSite",
       "@id": `${siteUrl}/#website`,
-      "url": siteUrl,
-      "name": brand.name,
-      "alternateName": "TKEÑOS San Cristóbal",
-      "description": brand.tagline,
-      "publisher": {
+      url: siteUrl,
+      name: brand.name,
+      alternateName: "TKEÑOS San Cristóbal",
+      description: brand.tagline,
+      publisher: {
         "@id": `${siteUrl}/#restaurant`,
       },
-      "inLanguage": "es-VE",
+      inLanguage: "es-VE",
     },
     {
       "@type": "Menu",
       "@id": `${siteUrl}/#menu`,
-      "name": `Menú ${brand.name}`,
-      "url": `${siteUrl}/#menu-sections`,
-      "mainEntityOfPage": siteUrl,
-      "inLanguage": "es-VE",
-      "hasMenuSection": categories.map((category) => ({
+      name: `Menú ${brand.name}`,
+      url: `${siteUrl}/#menu-sections`,
+      mainEntityOfPage: siteUrl,
+      inLanguage: "es-VE",
+      hasMenuSection: categories.map((category) => ({
         "@type": "MenuSection",
-        "name": category.label,
-        "hasMenuItem": category.products.slice(0, 15).map((product) => ({
+        name: category.label,
+        hasMenuItem: category.products.slice(0, 15).map((product) => ({
           "@type": "MenuItem",
-          "name": product.name,
-          "description": product.description || undefined,
-          "image": product.image_url || undefined,
-          "offers": {
+          name: product.name,
+          description: product.description || undefined,
+          image: product.image_url || undefined,
+          offers: {
             "@type": "Offer",
-            "price": product.price,
-            "priceCurrency": "COP",
-            "availability":
+            price: product.price,
+            priceCurrency: "COP",
+            availability:
               product.has_inventory &&
               product.stock !== null &&
               product.stock !== undefined &&
@@ -264,7 +264,10 @@ const structuredData = {
     />
 
     <!-- Datos Estructurados JSON-LD (Schema.org Restaurant, WebSite y Menu) -->
-    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+    <script
+      type="application/ld+json"
+      set:html={JSON.stringify(structuredData)}
+    />
 
     <!-- Variables CSS de Marca -->
     <style is:global set:html={brandCssVariablesStyle()}></style>
@@ -332,17 +335,19 @@ const structuredData = {
               src={brand.assets.logo}
               alt={brand.name}
               class="menu-hero__logo"
-              width={84}
-              height={84}
+              width={280}
+              height={132}
+              loading="eager"
+              decoding="async"
             />
           </div>
-          <div class="menu-hero__copy">
-            <h1 class="menu-hero__name">{brand.name}</h1>
-            <p class="menu-hero__tagline">{brand.tagline}</p>
-            <p class="sr-only">
-              Menú digital de comida rápida, tequeños gourmet, pastelitos y combos en San Cristóbal, Estado Táchira. Pedidos directos a domicilio y para llevar.
-            </p>
-          </div>
+          <h1 class="sr-only">{brand.name}</h1>
+          {brand.tagline && <p class="menu-hero__tagline">{brand.tagline}</p>}
+          <p class="sr-only">
+            Menú digital de comida rápida, tequeños gourmet, pastelitos y combos
+            en San Cristóbal, Estado Táchira. Pedidos directos a domicilio y
+            para llevar.
+          </p>
         </div>
       </div>
     </header>
@@ -554,9 +559,9 @@ const structuredData = {
       setInterval(updateStatusBadge, 30000);
 
       // Carrusel automático en móvil
-      const menuGrids = document.querySelectorAll<HTMLElement>('.menu-grid');
-      
-      menuGrids.forEach(grid => {
+      const menuGrids = document.querySelectorAll<HTMLElement>(".menu-grid");
+
+      menuGrids.forEach((grid) => {
         let isAutoScrolling = true;
         let scrollInterval: number | undefined;
 
@@ -565,11 +570,17 @@ const structuredData = {
             scrollInterval = window.setInterval(() => {
               if (isAutoScrolling) {
                 // Si el usuario no ha interactuado, mover el scroll
-                if (grid.scrollLeft + grid.clientWidth >= grid.scrollWidth - 10) {
-                  grid.scrollTo({ left: 0, behavior: 'smooth' });
+                if (
+                  grid.scrollLeft + grid.clientWidth >=
+                  grid.scrollWidth - 10
+                ) {
+                  grid.scrollTo({ left: 0, behavior: "smooth" });
                 } else {
                   // Mueve aproximadamente el ancho de una card
-                  grid.scrollBy({ left: grid.clientWidth * 0.85, behavior: 'smooth' });
+                  grid.scrollBy({
+                    left: grid.clientWidth * 0.85,
+                    behavior: "smooth",
+                  });
                 }
               }
             }, 3500);
@@ -584,14 +595,14 @@ const structuredData = {
         };
 
         // Detener auto-scroll cuando el usuario interactúa
-        grid.addEventListener('touchstart', stopAutoScroll, { passive: true });
-        grid.addEventListener('mousedown', stopAutoScroll, { passive: true });
-        
+        grid.addEventListener("touchstart", stopAutoScroll, { passive: true });
+        grid.addEventListener("mousedown", stopAutoScroll, { passive: true });
+
         // Iniciar auto-scroll
         startAutoScroll();
 
         // Manejar cambios de tamaño de ventana
-        window.addEventListener('resize', () => {
+        window.addEventListener("resize", () => {
           stopAutoScroll();
           if (window.innerWidth <= 640) {
             isAutoScrolling = true;
@@ -734,54 +745,49 @@ const structuredData = {
     align-items: center;
     justify-content: center;
     text-align: center;
-    gap: 1.15rem;
+    gap: 0.65rem;
   }
 
   .menu-hero__logo-wrap {
-    flex-shrink: 0;
-    width: 90px;
-    height: 90px;
-    border-radius: 50%;
-    padding: 0.4rem;
-    background: white;
-    box-shadow:
-      0 12px 30px -4px rgba(0, 0, 0, 0.12),
-      0 0 0 3px color-mix(in srgb, var(--color-primary) 35%, transparent);
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 1px solid var(--color-accent);
+    max-width: 100%;
   }
 
   .menu-hero__logo {
-    width: 100%;
-    height: 100%;
+    width: min(240px, 72vw);
+    height: auto;
     object-fit: contain;
-    border-radius: 50%;
+    display: block;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.38))
+      drop-shadow(0 8px 18px rgba(0, 0, 0, 0.26))
+      drop-shadow(0 16px 32px rgba(0, 0, 0, 0.16));
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
 
-  .menu-hero__copy {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    max-width: 38rem;
+  @media (min-width: 640px) {
+    .menu-hero__logo {
+      width: clamp(270px, 24vw, 350px);
+      filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.34))
+        drop-shadow(0 10px 22px rgba(0, 0, 0, 0.24))
+        drop-shadow(0 20px 40px rgba(0, 0, 0, 0.16));
+    }
   }
 
-  .menu-hero__name {
-    margin: 0;
-    font-size: clamp(1.75rem, 4vw, 2.5rem);
-    font-weight: 800;
-    letter-spacing: -0.025em;
-    line-height: 1.15;
-    color: var(--color-background);
+  .menu-hero__logo:hover {
+    transform: scale(1.02);
   }
 
   .menu-hero__tagline {
-    margin: 0.45rem 0 0;
-    font-size: 1rem;
-    color: var(--color-text-muted);
-    line-height: 1.45;
+    margin: 0.25rem 0 0;
+    font-size: clamp(0.95rem, 2vw, 1.05rem);
+    font-weight: 600;
+    color: var(--color-background);
+    line-height: 1.4;
+    letter-spacing: -0.01em;
+    opacity: 0.85;
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.2);
   }
 
   /* MAIN WRAPPER */
@@ -1026,12 +1032,17 @@ const structuredData = {
 
   @media (max-width: 640px) {
     .menu-hero {
-      padding: 2rem 1rem 2.25rem;
+      padding: 2.25rem 1rem 2.25rem;
+    }
+
+    .menu-hero__topbar {
+      padding-top: 1.5rem;
+      gap: 0.75rem;
     }
 
     .menu-hero__logo-wrap {
-      width: 76px;
-      height: 76px;
+      width: 100%;
+      height: auto;
     }
 
     .menu {
@@ -1054,7 +1065,7 @@ const structuredData = {
       -ms-overflow-style: none;
       scroll-behavior: smooth;
     }
-    
+
     .menu-grid::-webkit-scrollbar {
       display: none;
     }

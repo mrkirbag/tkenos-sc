@@ -26,6 +26,7 @@ CREATE TABLE products (
     requires_inventory BOOLEAN DEFAULT FALSE,
     inventory_product_id TEXT REFERENCES products(id),
     inventory_units_per_sale INTEGER NOT NULL DEFAULT 1,
+    inventory_items TEXT, -- JSON: insumos fijos / receta a descontar [{inventory_product_id, units}]
     flavor_groups TEXT, -- JSON: grupos de sabores con insumos de inventario [{id, name, units, options}]
     active BOOLEAN DEFAULT TRUE
 );

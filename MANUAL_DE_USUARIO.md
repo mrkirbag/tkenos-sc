@@ -110,10 +110,22 @@ Al abrir una comanda (desde una mesa o desde la lista de comandas) verás dos pa
 - Filtra por **categoría** (Tequeños, Combos, Bebidas, etc.).
 - Haz clic en un producto para seleccionarlo. Aparecerá un panel para:
   - Escoger la **cantidad**.
-  - Seleccionar **sabores o variantes** (si el producto las tiene).
+  - Seleccionar **sabores o variantes** (si el producto las tiene): podrás elegir **Todo Completo** (un solo sabor) o **Mitad y Mitad** si el producto lo permite, indicando exactamente las cantidades de piezas.
   - Agregar **adicionales** disponibles.
   - Escribir una **nota especial** (ej: "sin sal", "bien tostado").
 - Haz clic en **Agregar al pedido**.
+
+### Selección de sabores en comandas (Todo Completo vs Mitad y Mitad)
+
+Al tocar un producto o combo configurado con sabores (por ejemplo: Combo 24 tequeños):
+1. Se abrirá la ventana de selección de sabores.
+2. Si el producto tiene habilitada la opción de combinación, verás dos pestañas:
+   - **Todo Completo (ej: 24 uds):** Permite elegir un solo sabor para todo el combo.
+   - **Mitad y Mitad (ej: 12 / 12 uds):** Permite elegir dos sabores diferentes:
+     - **1ª Mitad (12 unidades):** Selecciona el sabor de la primera mitad.
+     - **2ª Mitad (12 unidades):** Selecciona el sabor de la segunda mitad.
+3. Si el grupo tiene activada la **Selección obligatoria**, el botón **Agregar al pedido** se mantendrá deshabilitado hasta que se hayan completado todas las opciones requeridas.
+4. En el resumen del pedido, en la pantalla de cocina y en los tickets impresos, el combo queda claramente identificado con sus sabores y cantidades exactas.
 
 ### Parte derecha – Resumen del pedido (ticket)
 
@@ -192,7 +204,7 @@ Esta pantalla es exclusiva para el personal de cocina. Muestra en tiempo real to
 Cada pedido aparece en una **tarjeta** que muestra:
 - El número de mesa o nombre del domicilio / para llevar.
 - La hora en que fue enviado a cocina y cuántos minutos lleva esperando.
-- La lista de productos a preparar, con sabores y notas especiales claramente indicados.
+- La lista de productos a preparar, con sabores y notas especiales claramente indicados. En combos o productos combinados, se muestra el desglose exacto de piezas por sabor (ej: *1ª Mitad Queso 12 uds, 2ª Mitad Jamón y Queso 12 uds*).
 
 ### El botón "Listo"
 
@@ -334,46 +346,102 @@ Descarga el reporte completo en **PDF** con un solo clic.
 
 Sección: **Productos → Catálogo** *(Solo administradores)*
 
-Aquí administras todos los productos que aparecen en el menú al tomar comandas.
+Aquí administras todos los productos que aparecen en el menú para tomar comandas y en la tienda online.
 
-### Ver el catálogo
+### Ver el catálogo y descuentos de inventario
 
 - Usa el **buscador** para encontrar un producto por nombre, categoría o precio.
 - Filtra por **categoría**: Tequeños, Combos, Pastelitos, Bebidas, etc.
+- En la tabla de productos verás:
+  - **Producto:** Foto, nombre y categoría del menú.
+  - **Precio:** En pesos colombianos (COP).
+  - **Estado:** Badge verde de **Activo** (visible en el menú) o gris de **Inactivo** (oculto).
+  - **Descuentos de Inventario vinculados:** Cada producto muestra de forma directa qué insumos y cuántas unidades descuenta automáticamente al venderse (ej: `Descuenta (2): 1× Caja Combo 24, 2× Salsa de Ajo`), o bien `Sin descuento vinculado` si no descuenta insumos fijos.
 
-### Agregar un producto nuevo
+### Agregar o editar un producto
 
-Haz clic en **+ Nuevo producto** y completa:
+Haz clic en **+ Nuevo producto** (o en el ícono de **lápiz ✏️** en cualquier producto existente) para abrir el formulario de gestión:
+
+#### 1. Datos principales
 
 | Campo | Descripción |
 |---|---|
-| Nombre | Nombre del producto tal como aparecerá en la comanda |
-| Precio | Precio en pesos (COP) |
-| Categoría | A qué categoría del menú pertenece |
-| Descripción | Descripción opcional del producto |
-| Foto | Imagen del producto (se puede subir desde tu computador) |
-| Activo | Si está activado, aparece en el menú; si no, queda oculto |
-| Insumo vinculado | Opcional: vincula el producto al inventario para descontar unidades al vender |
+| **Nombre del producto** | Nombre tal como aparecerá en el menú, comandas y tickets (ej: *"Combo 24 Tequeños Tradicionales"*). |
+| **Precio ($ COP)** | Precio de venta al público en pesos colombianos. |
+| **Categoría** | A qué sección del menú corresponde (Tequeños, Combos, Bebidas, etc.). |
+| **Descripción** | Texto opcional que describe el producto al cliente o personal. |
+| **Foto del producto** | Imagen representativa. Puedes subirla desde tu equipo o arrastrarla. |
+| **Estado Activo** | Casilla para activar o desactivar el producto en el menú sin tener que borrarlo. |
 
-#### Opciones de sabores / variantes
+---
 
-Si el producto tiene variantes (ej: "Relleno de queso" / "Relleno de carne"):
-1. Haz clic en **+ Agregar grupo de sabores**.
-2. Dale un nombre al grupo (ej: "Tipo de relleno").
-3. Agrega las opciones (ej: "Queso", "Carne", "Pollo").
-4. Indica si la selección es **obligatoria** o no.
+### Insumos fijos a descontar (Receta de Inventario)
 
-### Editar un producto
+Esta sección permite asociar los insumos del inventario que siempre se gastan con cada venta de este producto (por ejemplo: cajas de empaque, bolsas térmicas, salsas fijas de acompañamiento o el insumo base).
 
-Haz clic en el ícono de **lápiz ✏️** en la fila del producto. Puedes cambiar cualquier dato y guardar.
+> 💡 **¿Para qué sirve la receta?**
+> Al vender un producto no solo se entrega la comida: también se consumen empaques y aderezos. Configurar esta lista permite que el sistema descuente del inventario automáticamente y con total precisión cada elemento consumido en el momento de la venta.
 
-### Desactivar un producto
+#### ¿Cómo configurar los insumos fijos?
 
-Si un producto está agotado o no se vende temporalmente, puedes **desactivarlo** sin borrarlo. Editalo y cambia el estado a "Inactivo". Así no aparecerá en el menú al tomar comandas.
+1. En el formulario, ubica la sección **Insumos fijos a descontar (opcional)**.
+2. Haz clic en el botón **+ Agregar Insumo**.
+3. Se agregará una fila con:
+   - **Selector de Insumo:** Menú desplegable agrupado por categorías de inventario. Muestra el nombre del insumo, su stock actual en tiempo real y su unidad de medida (ej: `Caja Combo 24 — 120 unidades`).
+   - **Cantidad (Cant.):** Número de unidades a descontar por cada producto vendido (ej: `1` para una caja, `2` para dos salsas).
+   - **Insignia de Stock:** Muestra visualmente la disponibilidad actual del insumo seleccionado (`Stock: X unidades`).
+   - **Botón de eliminar (papelera 🗑️):** Quita esa fila si ya no deseas vincular ese insumo.
+4. Puedes hacer clic en **+ Agregar Insumo** tantas veces como insumos requiera la receta del producto.
+5. Para productos simples que no requieran control de empaques o insumos fijos (por ejemplo, una bebida ya inventariada por sabor o sin control de receta), simplemente déjalo sin insumos.
 
-### Eliminar un producto
+---
 
-Haz clic en el ícono de **papelera 🗑️** y confirma la eliminación.
+### Sabores y Combos (Todo Completo vs Mitad y Mitad)
+
+Esta sección está diseñada específicamente para productos o combos que permiten al cliente o mesero seleccionar sabores (por ejemplo: **Combo 24 Tequeños**, **Bandeja 12 Tequeños**, **Pastelitos surtidos**, etc.).
+
+> 💡 **Nota importante:**
+> No agregues grupos de sabores a productos simples (como una gaseosa o un agua). Úsalo únicamente para combos o productos que ofrecen selección de sabores al momento del pedido.
+
+#### Configurar un grupo de sabores para un combo
+
+1. Haz clic en el botón **+ Agregar Sabores de Combo**.
+2. Completa los datos del grupo:
+   - **Nombre del Grupo:** Identificador del grupo (ej: *"Sabor de Tequeños"* o *"Tipo de Relleno"*).
+   - **Total piezas del combo (`units`):** Cantidad total de tequeños o unidades que incluye el combo (ej: `24` para un combo de 24 piezas, `12` para una docena, etc.).
+   - **Permitir Mitad y Mitad (casilla):**
+     - Si está **marcada**: El sistema calcula de inmediato la división exacta en piezas (ej: `12 y 12 uds` para un combo de 24) y permite al usuario elegir entre **"Todo Completo"** (un solo sabor) o **"Mitad y Mitad"** (dos sabores combinados).
+     - Si está **desmarcada**: El combo solo podrá ordenarse de un único sabor para la totalidad de las piezas.
+   - **Selección obligatoria (casilla):**
+     - Si está **marcada**: Es indispensable que el cajero, mesero o cliente seleccione los sabores para poder agregar el producto al pedido o al carrito. Evita pedidos incompletos hacia la cocina.
+
+#### Configurar las opciones de sabores y su descuento de inventario
+
+Dentro del grupo de sabores, agrega todas las opciones disponibles:
+
+1. Haz clic en **+ Agregar Opción** para añadir un nuevo sabor.
+2. Completa:
+   - **Nombre de la opción:** El nombre del sabor tal como lo verá el cliente (ej: *"Queso Tradicional"*, *"Jamón y Queso"*, *"Chocolate"*, *"Bocadillo y Queso"*).
+   - **Selector de inventario por sabor:**
+     - Si deseas descontar el insumo crudo del inventario (ej: *"Tequeño Crudo Queso"*), selecciónalo en la lista desplegable.
+     - Si este sabor no necesita descontar stock o ya está controlado por otro método, déjalo en **"Sin descuento de inventario"**.
+3. Usa el botón **✖** en cualquier fila para eliminar un sabor si se descontinúa.
+
+#### ¿Cómo descuenta el inventario al venderse un combo con sabores?
+
+El sistema calcula de manera exacta el consumo:
+- **Si el pedido es "Todo Completo" (ej: 24 piezas de Queso):**
+  Descuenta 24 unidades del insumo vinculado a *Queso Tradicional* + los insumos fijos configurados en la receta (caja, bolsa, salsas).
+- **Si el pedido es "Mitad y Mitad" (ej: 12 piezas de Queso y 12 piezas de Jamón y Queso):**
+  Descuenta 12 unidades del insumo vinculado a *Queso Tradicional* y 12 unidades del insumo vinculado a *Jamón y Queso* + los insumos fijos de la receta.
+
+---
+
+### Editar o desactivar un producto
+
+- **Editar:** Haz clic en el ícono de **lápiz ✏️** en la fila del producto, modifica cualquier dato, receta o grupo de sabores y presiona **Guardar producto**.
+- **Desactivar temporalmente:** Si un producto está agotado o no se ofrecerá por unos días, no lo borres. Edítalo y desmarca la casilla **"Activo"**. Dejará de mostrarse en el menú de comandas y en la tienda en línea inmediatamente, conservando toda su configuración para reactivarlo cuando desees.
+- **Eliminar definitivamente:** Haz clic en el ícono de **papelera 🗑️** y confirma la eliminación.
 
 ---
 
@@ -412,7 +480,16 @@ Haz clic en el ícono de movimiento del insumo:
 - **Entrada** — Cuando recibes mercancía nueva. Indica cuántas unidades entran y el motivo (ej: "Compra a proveedor").
 - **Salida** — Cuando se usa o retira mercancía manualmente. Indica cuántas unidades salen y el motivo.
 
-> El stock también puede actualizarse automáticamente cuando se venden productos vinculados al inventario desde las comandas.
+### Descuento automático de stock por ventas
+
+El stock del inventario no solo se mueve manualmente: **se descuenta automáticamente en tiempo real con cada pedido registrado y cobrado**:
+
+1. **Por insumos fijos (Receta del menú):** Se rebajan las cantidades configuradas de empaques, bolsas, salsas o unidades base asociadas al producto en el Catálogo.
+2. **Por sabores seleccionados en combos:**
+   - Si se vendió **Todo Completo**, descuenta todas las piezas (ej: 24 unidades) del insumo vinculado a ese sabor.
+   - Si se vendió **Mitad y Mitad**, descuenta las piezas de cada mitad de manera proporcional (ej: 12 unidades del insumo del primer sabor y 12 unidades del insumo del segundo sabor).
+
+> 💡 **Historial:** Cada descuento generado por comanda queda registrado en el historial de movimientos del insumo con su cantidad, fecha y referencia al pedido.
 
 ### Ver historial de movimientos
 
@@ -545,6 +622,15 @@ Comunícate con el administrador. Las facturas ya emitidas quedan registradas y 
 **¿Cómo sé si hay poco inventario?**
 En la sección de Inventario, los insumos con stock bajo aparecen resaltados. El administrador y el productor pueden ver esto en cualquier momento.
 
+**¿Cómo configuro un combo para que el cliente elija dos sabores mitad y mitad?**
+En **Productos → Catálogo**, edita el combo. En la sección **Sabores y Combos**, agrega un grupo (ej: "Sabor de Tequeños"), ingresa el total de piezas (ej: 24) y activa la casilla **"Permitir Mitad y Mitad"**. Al tomar la comanda, aparecerán las opciones para elegir Todo Completo o 1ª Mitad y 2ª Mitad con la cantidad exacta de piezas.
+
+**¿Cómo se descuenta el inventario si el cliente pide mitad y mitad?**
+El sistema divide proporcionalmente las unidades. Por ejemplo, en un combo de 24 tequeños con mitad Queso y mitad Jamón y Queso, descuenta 12 unidades del insumo crudo de Queso y 12 unidades del insumo crudo de Jamón y Queso.
+
+**¿Cómo asocio cajas, salsas o bolsas para que se descuenten solas con cada venta?**
+En la edición del producto en el Catálogo, usa la sección **Insumos fijos a descontar (opcional)**. Haz clic en **+ Agregar Insumo**, elige el insumo (ej: "Caja Combo 24" o "Salsa Tártara") y especifica cuántas unidades se descuentan por cada venta.
+
 ---
 
-*Manual elaborado para el equipo de TKEÑOS.SC — Versión 1.0*
+*Manual elaborado para el equipo de TKEÑOS.SC — Versión 1.1*

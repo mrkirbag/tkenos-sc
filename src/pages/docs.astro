@@ -90,7 +90,7 @@ const isLoggedIn = !!session;
         <article class="docs-article markdown-body" set:html={htmlContent} />
 
         <footer class="docs-footer">
-          <p>Manual elaborado para el equipo de <strong>{brand.name}</strong> · Versión 1.0</p>
+          <p>Manual elaborado para el equipo de <strong>{brand.name}</strong> · Versión 1.1</p>
           {isLoggedIn && (
             <a href="/panel" class="docs-footer__link">← Volver al Panel</a>
           )}
@@ -104,6 +104,20 @@ const isLoggedIn = !!session;
     </button>
 
     <script>
+      function wrapTables() {
+        const article = document.querySelector('.docs-article');
+        if (!article) return;
+        const tables = article.querySelectorAll('table');
+        tables.forEach((table) => {
+          if (!table.parentElement?.classList.contains('docs-table-container')) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'docs-table-container';
+            table.parentNode?.insertBefore(wrapper, table);
+            wrapper.appendChild(table);
+          }
+        });
+      }
+
       function buildToc() {
         const article = document.querySelector('.docs-article');
         const toc = document.getElementById('docs-toc');
@@ -177,6 +191,7 @@ const isLoggedIn = !!session;
         });
       }
 
+      wrapTables();
       buildToc();
       setupScrollSpy();
       setupMobileToggle();
@@ -499,14 +514,31 @@ const isLoggedIn = !!session;
         font-size: inherit;
       }
 
-      /* Tablas */
+      /* Tablas responsivas */
+      .docs-table-container {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin-bottom: 1.5rem;
+        border-radius: 10px;
+        border: 1px solid var(--d-border);
+        background: var(--d-bg);
+      }
+
+      .docs-table-container table {
+        width: 100%;
+        min-width: 540px;
+        margin-bottom: 0;
+        border: none;
+        border-radius: 0;
+      }
+
       .markdown-body table {
         width: 100%;
         border-collapse: collapse;
         margin-bottom: 1.5rem;
         font-size: 0.9rem;
         border-radius: 10px;
-        overflow: hidden;
         border: 1px solid var(--d-border);
       }
 

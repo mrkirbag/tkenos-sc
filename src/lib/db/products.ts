@@ -2,10 +2,11 @@ import { isValidMenuCategory } from '@/data/product-categories';
 import { createId } from '@/lib/utils/id';
 
 import { db } from './client';
+import { ensureMigrations } from './init';
 import { getInventoryItemById } from './inventory';
 import { deleteImageByUrl } from '@/lib/uploadthing/server';
 import type { SqlArgs } from './sql';
-import type { Product, ProductFlavorGroup } from './types';
+import type { Product, ProductFlavorGroup, ProductInventoryItem } from './types';
 
 export type CatalogProduct = {
   id: string;
@@ -17,6 +18,7 @@ export type CatalogProduct = {
   active: boolean;
   inventory_product_id: string | null;
   inventory_units_per_sale: number;
+  inventory_items?: ProductInventoryItem[] | null;
   inventory_item_name: string | null;
   flavor_groups?: ProductFlavorGroup[] | null;
   stock?: number | null;
@@ -33,6 +35,7 @@ const CATALOG_COLUMNS = `
   p.active,
   p.inventory_product_id,
   p.inventory_units_per_sale,
+  p.inventory_items,
   p.flavor_groups,
   inv.name AS inventory_item_name,
   inv_stock.stock AS inventory_stock
@@ -44,8 +47,98 @@ const CATALOG_FROM = `
   LEFT JOIN inventory inv_stock ON inv_stock.product_id = p.inventory_product_id
 `;
 
+export function parseInventoryItems(raw: unknown): ProductInventoryItem[] | null {
+  if (!raw) return null;
+  let parsed = raw;
+  if (typeof raw === 'string') {
+    try {
+      parsed = JSON.parse(raw);
+    } catch {
+      return null;
+    }
+  }
+  if (!Array.isArray(parsed)) return null;
+  const items: ProductInventoryItem[] = [];
+  for (const it of parsed) {
+    if (
+      it &&
+      typeof it === 'object' &&
+      typeof (it as Record<string, unknown>).inventory_product_id === 'string' &&
+      (it as Record<string, unknown>).inventory_product_id
+    ) {
+      items.push({
+        inventory_product_id: String((it as Record<string, unknown>).inventory_product_id).trim(),
+        units: Math.max(1, Number((it as Record<string, unknown>).units) || 1),
+      });
+    }
+  }
+  return items.length > 0 ? items : null;
+}
+
+export function parseFlavorGroups(raw: unknown): ProductFlavorGroup[] | null {
+  if (!raw) return null;
+  if (Array.isArray(raw)) return raw as ProductFlavorGroup[];
+  if (typeof raw === 'string') {
+    try {
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? (parsed as ProductFlavorGroup[]) : null;
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+export async function populateInventoryItemsStock<
+  T extends {
+    inventory_items?: ProductInventoryItem[] | null;
+    inventory_product_id?: string | null;
+    inventory_units_per_sale?: number;
+    stock?: number | null;
+    has_inventory?: boolean;
+  },
+>(products: T[]): Promise<void> {
+  const neededProductIds = new Set<string>();
+  for (const p of products) {
+    if (p.inventory_items && p.inventory_items.length > 0) {
+      for (const it of p.inventory_items) {
+        if (it.inventory_product_id) neededProductIds.add(it.inventory_product_id);
+      }
+    }
+  }
+
+  if (neededProductIds.size === 0) return;
+
+  const ids = Array.from(neededProductIds);
+  const placeholders = ids.map(() => '?').join(', ');
+  const result = await db.execute({
+    sql: `SELECT product_id, stock FROM inventory WHERE product_id IN (${placeholders})`,
+    args: ids,
+  });
+
+  const stockMap = new Map<string, number>();
+  for (const row of result.rows) {
+    stockMap.set(String(row.product_id), Number(row.stock ?? 0));
+  }
+
+  for (const p of products) {
+    if (p.inventory_items && p.inventory_items.length > 0) {
+      let minPossible: number | null = null;
+      for (const item of p.inventory_items) {
+        const currentStock = stockMap.get(item.inventory_product_id) ?? 0;
+        const units = Math.max(1, item.units || 1);
+        const possible = Math.floor(currentStock / units);
+        minPossible = minPossible === null ? possible : Math.min(minPossible, possible);
+      }
+      p.stock = Math.max(0, minPossible ?? 0);
+      p.has_inventory = true;
+    }
+  }
+}
+
 function mapProduct(row: Record<string, unknown>): CatalogProduct {
-  const hasInventory = Boolean(row.inventory_product_id);
+  const inventoryItems = parseInventoryItems(row.inventory_items);
+  const hasInventory = Boolean((inventoryItems && inventoryItems.length > 0) || row.inventory_product_id);
   let stock: number | null = null;
   if (hasInventory) {
     const rawStock = row.inventory_stock !== null && row.inventory_stock !== undefined
@@ -54,20 +147,6 @@ function mapProduct(row: Record<string, unknown>): CatalogProduct {
     const unitsPerSale = Number(row.inventory_units_per_sale ?? 1);
     const ratio = Math.max(1, unitsPerSale);
     stock = Math.max(0, Math.floor(rawStock / ratio));
-  }
-
-  function parseFlavorGroups(raw: unknown): ProductFlavorGroup[] | null {
-    if (!raw) return null;
-    if (Array.isArray(raw)) return raw as ProductFlavorGroup[];
-    if (typeof raw === 'string') {
-      try {
-        const parsed = JSON.parse(raw);
-        return Array.isArray(parsed) ? (parsed as ProductFlavorGroup[]) : null;
-      } catch {
-        return null;
-      }
-    }
-    return null;
   }
 
   return {
@@ -80,6 +159,7 @@ function mapProduct(row: Record<string, unknown>): CatalogProduct {
     active: Boolean(row.active),
     inventory_product_id: row.inventory_product_id ? String(row.inventory_product_id) : null,
     inventory_units_per_sale: Number(row.inventory_units_per_sale ?? 1),
+    inventory_items: inventoryItems,
     inventory_item_name: row.inventory_item_name ? String(row.inventory_item_name) : null,
     flavor_groups: parseFlavorGroups(row.flavor_groups),
     stock,
@@ -88,7 +168,10 @@ function mapProduct(row: Record<string, unknown>): CatalogProduct {
 }
 
 function mapMenuProduct(row: Record<string, unknown>): Product {
-  const hasInventory = Boolean(row.inventory_product_id || row.requires_inventory);
+  const inventoryItems = parseInventoryItems(row.inventory_items);
+  const hasInventory = Boolean(
+    (inventoryItems && inventoryItems.length > 0) || row.inventory_product_id || row.requires_inventory,
+  );
   let stock: number | null = null;
   if (hasInventory) {
     const rawStock = row.inventory_stock !== null && row.inventory_stock !== undefined
@@ -97,20 +180,6 @@ function mapMenuProduct(row: Record<string, unknown>): Product {
     const unitsPerSale = Number(row.inventory_units_per_sale ?? 1);
     const ratio = Math.max(1, unitsPerSale);
     stock = Math.max(0, Math.floor(rawStock / ratio));
-  }
-
-  function parseFlavorGroups(raw: unknown): ProductFlavorGroup[] | null {
-    if (!raw) return null;
-    if (Array.isArray(raw)) return raw as ProductFlavorGroup[];
-    if (typeof raw === 'string') {
-      try {
-        const parsed = JSON.parse(raw);
-        return Array.isArray(parsed) ? (parsed as ProductFlavorGroup[]) : null;
-      } catch {
-        return null;
-      }
-    }
-    return null;
   }
 
   return {
@@ -124,6 +193,7 @@ function mapMenuProduct(row: Record<string, unknown>): Product {
     active: Boolean(row.active),
     inventory_product_id: row.inventory_product_id ? String(row.inventory_product_id) : null,
     inventory_units_per_sale: Number(row.inventory_units_per_sale ?? 1),
+    inventory_items: inventoryItems,
     flavor_groups: parseFlavorGroups(row.flavor_groups),
     stock,
     has_inventory: hasInventory,
@@ -134,6 +204,7 @@ export type MenuInventoryLink = {
   requires_inventory: boolean;
   inventory_product_id: string | null;
   inventory_units_per_sale: number;
+  inventory_items?: ProductInventoryItem[] | null;
   flavor_groups?: ProductFlavorGroup[] | null;
 };
 
@@ -142,9 +213,10 @@ export { isValidMenuCategory };
 export async function getMenuProductInventoryLink(
   productId: string,
 ): Promise<MenuInventoryLink | null> {
+  await ensureMigrations();
   const result = await db.execute({
     sql: `
-      SELECT requires_inventory, inventory_product_id, inventory_units_per_sale, flavor_groups
+      SELECT requires_inventory, inventory_product_id, inventory_units_per_sale, inventory_items, flavor_groups
       FROM products
       WHERE id = ?
       LIMIT 1
@@ -164,44 +236,76 @@ export async function getMenuProductInventoryLink(
     }
   }
 
+  const inventoryItems = parseInventoryItems(row.inventory_items);
+
   return {
     requires_inventory: Boolean(row.requires_inventory),
     inventory_product_id: row.inventory_product_id ? String(row.inventory_product_id) : null,
     inventory_units_per_sale: Number(row.inventory_units_per_sale ?? 1),
+    inventory_items: inventoryItems,
     flavor_groups: flavorGroups,
   };
 }
 
-async function validateInventoryLink(
+export async function validateInventoryConfiguration(
   category: string,
-  inventoryProductId: string | null | undefined,
-  inventoryUnitsPerSale?: number,
-): Promise<{ inventory_product_id: string | null; inventory_units_per_sale: number }> {
-  if (!inventoryProductId) {
-    return { inventory_product_id: null, inventory_units_per_sale: 1 };
-  }
-
+  inventoryItems?: ProductInventoryItem[] | null,
+  legacyInventoryProductId?: string | null,
+  legacyUnitsPerSale?: number,
+): Promise<{
+  inventory_items: ProductInventoryItem[] | null;
+  inventory_product_id: string | null;
+  inventory_units_per_sale: number;
+}> {
   if (!isValidMenuCategory(category)) {
     throw new Error('Categoría inválida');
   }
 
-  const item = await getInventoryItemById(inventoryProductId);
-  if (!item) {
-    throw new Error('El ítem de inventario seleccionado no existe');
+  if (inventoryItems && inventoryItems.length > 0) {
+    const validated: ProductInventoryItem[] = [];
+    for (const item of inventoryItems) {
+      if (!item.inventory_product_id) continue;
+      const exists = await getInventoryItemById(item.inventory_product_id);
+      if (!exists) {
+        throw new Error('Uno de los insumos seleccionados no existe en el inventario');
+      }
+      const units = Math.max(1, Math.floor(Number(item.units) || 1));
+      validated.push({
+        inventory_product_id: item.inventory_product_id,
+        units,
+      });
+    }
+    if (validated.length > 0) {
+      return {
+        inventory_items: validated,
+        inventory_product_id: validated[0].inventory_product_id,
+        inventory_units_per_sale: validated[0].units,
+      };
+    }
   }
 
-  const units = inventoryUnitsPerSale ?? 1;
-  if (!Number.isInteger(units) || units < 1) {
-    throw new Error('Las unidades por venta deben ser al menos 1');
+  if (legacyInventoryProductId) {
+    const exists = await getInventoryItemById(legacyInventoryProductId);
+    if (!exists) {
+      throw new Error('El ítem de inventario seleccionado no existe');
+    }
+    const units = Math.max(1, Math.floor(Number(legacyUnitsPerSale) || 1));
+    return {
+      inventory_items: [{ inventory_product_id: legacyInventoryProductId, units }],
+      inventory_product_id: legacyInventoryProductId,
+      inventory_units_per_sale: units,
+    };
   }
 
   return {
-    inventory_product_id: inventoryProductId,
-    inventory_units_per_sale: units,
+    inventory_items: null,
+    inventory_product_id: null,
+    inventory_units_per_sale: 1,
   };
 }
 
 export async function listCatalogProducts(category?: string): Promise<CatalogProduct[]> {
+  await ensureMigrations();
   const sql = category
     ? `SELECT ${CATALOG_COLUMNS} ${CATALOG_FROM}
        WHERE p.requires_inventory = 0 AND p.category = ?
@@ -215,10 +319,13 @@ export async function listCatalogProducts(category?: string): Promise<CatalogPro
     args: category ? [category] : [],
   });
 
-  return result.rows.map((row) => mapProduct(row as Record<string, unknown>));
+  const products = result.rows.map((row) => mapProduct(row as Record<string, unknown>));
+  await populateInventoryItemsStock(products);
+  return products;
 }
 
 export async function getCatalogProductById(id: string): Promise<CatalogProduct | null> {
+  await ensureMigrations();
   const result = await db.execute({
     sql: `SELECT ${CATALOG_COLUMNS} ${CATALOG_FROM}
           WHERE p.id = ? AND p.requires_inventory = 0 LIMIT 1`,
@@ -226,7 +333,9 @@ export async function getCatalogProductById(id: string): Promise<CatalogProduct 
   });
 
   if (result.rows.length === 0) return null;
-  return mapProduct(result.rows[0] as Record<string, unknown>);
+  const product = mapProduct(result.rows[0] as Record<string, unknown>);
+  await populateInventoryItemsStock([product]);
+  return product;
 }
 
 export async function getProductByName(
@@ -260,14 +369,16 @@ type CreateCatalogProductInput = {
   description?: string | null;
   inventory_product_id?: string | null;
   inventory_units_per_sale?: number;
+  inventory_items?: ProductInventoryItem[] | null;
   flavor_groups?: ProductFlavorGroup[] | null;
 };
 
 export async function createCatalogProduct(
   input: CreateCatalogProductInput,
 ): Promise<CatalogProduct> {
-  const inventoryLink = await validateInventoryLink(
+  const inventoryConfig = await validateInventoryConfiguration(
     input.category,
+    input.inventory_items,
     input.inventory_product_id,
     input.inventory_units_per_sale,
   );
@@ -278,9 +389,9 @@ export async function createCatalogProduct(
     sql: `
       INSERT INTO products (
         id, name, price, category, image_url, description, requires_inventory, active,
-        inventory_product_id, inventory_units_per_sale, flavor_groups
+        inventory_product_id, inventory_units_per_sale, inventory_items, flavor_groups
       )
-      VALUES (?, ?, ?, ?, ?, ?, 0, 1, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, 0, 1, ?, ?, ?, ?)
     `,
     args: [
       id,
@@ -289,8 +400,9 @@ export async function createCatalogProduct(
       input.category,
       input.image_url ?? null,
       input.description ?? null,
-      inventoryLink.inventory_product_id,
-      inventoryLink.inventory_units_per_sale,
+      inventoryConfig.inventory_product_id,
+      inventoryConfig.inventory_units_per_sale,
+      inventoryConfig.inventory_items ? JSON.stringify(inventoryConfig.inventory_items) : null,
       input.flavor_groups ? JSON.stringify(input.flavor_groups) : null,
     ],
   });
@@ -309,6 +421,7 @@ type UpdateCatalogProductInput = {
   active?: boolean;
   inventory_product_id?: string | null;
   inventory_units_per_sale?: number;
+  inventory_items?: ProductInventoryItem[] | null;
   flavor_groups?: ProductFlavorGroup[] | null;
 };
 
@@ -345,7 +458,6 @@ export async function updateCatalogProduct(
 
   if (input.image_url !== undefined) {
     if (current.image_url && current.image_url !== input.image_url) {
-      // Borrar asíncronamente la imagen vieja
       deleteImageByUrl(current.image_url).catch(console.error);
     }
     fields.push('image_url = ?');
@@ -363,28 +475,28 @@ export async function updateCatalogProduct(
   }
 
   const inventoryTouched =
-    input.inventory_product_id !== undefined || input.inventory_units_per_sale !== undefined;
+    input.inventory_items !== undefined ||
+    input.inventory_product_id !== undefined ||
+    input.inventory_units_per_sale !== undefined;
 
   if (inventoryTouched) {
-    const inventoryProductId =
-      input.inventory_product_id !== undefined
-        ? input.inventory_product_id
-        : current.inventory_product_id;
-    const inventoryUnitsPerSale =
-      input.inventory_units_per_sale !== undefined
-        ? input.inventory_units_per_sale
-        : current.inventory_units_per_sale;
+    const rawItems = input.inventory_items !== undefined ? input.inventory_items : current.inventory_items;
+    const rawProductId = input.inventory_product_id !== undefined ? input.inventory_product_id : current.inventory_product_id;
+    const rawUnits = input.inventory_units_per_sale !== undefined ? input.inventory_units_per_sale : current.inventory_units_per_sale;
 
-    const inventoryLink = await validateInventoryLink(
+    const inventoryConfig = await validateInventoryConfiguration(
       nextCategory,
-      inventoryProductId,
-      inventoryUnitsPerSale,
+      rawItems,
+      rawProductId,
+      rawUnits,
     );
 
     fields.push('inventory_product_id = ?');
-    args.push(inventoryLink.inventory_product_id);
+    args.push(inventoryConfig.inventory_product_id);
     fields.push('inventory_units_per_sale = ?');
-    args.push(inventoryLink.inventory_units_per_sale);
+    args.push(inventoryConfig.inventory_units_per_sale);
+    fields.push('inventory_items = ?');
+    args.push(inventoryConfig.inventory_items ? JSON.stringify(inventoryConfig.inventory_items) : null);
   }
 
   if (fields.length === 0) {
@@ -410,7 +522,6 @@ export async function deleteCatalogProduct(id: string): Promise<boolean> {
   const success = result.rowsAffected > 0;
   
   if (success && current?.image_url) {
-    // Borrar asíncronamente la imagen asociada
     deleteImageByUrl(current.image_url).catch(console.error);
   }
 
@@ -419,13 +530,14 @@ export async function deleteCatalogProduct(id: string): Promise<boolean> {
 
 /** Productos activos del menú por IDs (para adicionales de comanda). */
 export async function getActiveMenuProductsByIds(ids: string[]): Promise<Product[]> {
+  await ensureMigrations();
   const uniqueIds = [...new Set(ids.filter(Boolean))];
   if (uniqueIds.length === 0) return [];
 
   const placeholders = uniqueIds.map(() => '?').join(', ');
   const result = await db.execute({
     sql: `SELECT p.id, p.name, p.price, p.category, p.image_url, p.description, p.requires_inventory, p.active,
-                 p.inventory_product_id, p.inventory_units_per_sale, p.flavor_groups,
+                 p.inventory_product_id, p.inventory_units_per_sale, p.inventory_items, p.flavor_groups,
                  inv.stock AS inventory_stock
           FROM products p
           LEFT JOIN inventory inv ON inv.product_id = COALESCE(p.inventory_product_id, CASE WHEN p.requires_inventory = 1 THEN p.id ELSE NULL END)
@@ -433,14 +545,17 @@ export async function getActiveMenuProductsByIds(ids: string[]): Promise<Product
     args: uniqueIds,
   });
 
-  return result.rows.map((row) => mapMenuProduct(row as Record<string, unknown>));
+  const products = result.rows.map((row) => mapMenuProduct(row as Record<string, unknown>));
+  await populateInventoryItemsStock(products);
+  return products;
 }
 
 /** Producto activo del menú por ID (para comandas). */
 export async function getActiveMenuProductById(id: string): Promise<Product | null> {
+  await ensureMigrations();
   const result = await db.execute({
     sql: `SELECT p.id, p.name, p.price, p.category, p.image_url, p.description, p.requires_inventory, p.active,
-                 p.inventory_product_id, p.inventory_units_per_sale, p.flavor_groups,
+                 p.inventory_product_id, p.inventory_units_per_sale, p.inventory_items, p.flavor_groups,
                  inv.stock AS inventory_stock
           FROM products p
           LEFT JOIN inventory inv ON inv.product_id = COALESCE(p.inventory_product_id, CASE WHEN p.requires_inventory = 1 THEN p.id ELSE NULL END)
@@ -450,14 +565,17 @@ export async function getActiveMenuProductById(id: string): Promise<Product | nu
   });
 
   if (result.rows.length === 0) return null;
-  return mapMenuProduct(result.rows[0] as Record<string, unknown>);
+  const product = mapMenuProduct(result.rows[0] as Record<string, unknown>);
+  await populateInventoryItemsStock([product]);
+  return product;
 }
 
 /** Productos activos del menú para comandas. */
 export async function listActiveMenuProducts(): Promise<Product[]> {
+  await ensureMigrations();
   const result = await db.execute({
     sql: `SELECT p.id, p.name, p.price, p.category, p.image_url, p.description, p.requires_inventory, p.active,
-                 p.inventory_product_id, p.inventory_units_per_sale, p.flavor_groups,
+                 p.inventory_product_id, p.inventory_units_per_sale, p.inventory_items, p.flavor_groups,
                  inv.stock AS inventory_stock
           FROM products p
           LEFT JOIN inventory inv ON inv.product_id = COALESCE(p.inventory_product_id, CASE WHEN p.requires_inventory = 1 THEN p.id ELSE NULL END)
@@ -466,5 +584,7 @@ export async function listActiveMenuProducts(): Promise<Product[]> {
     args: [],
   });
 
-  return result.rows.map((row) => mapMenuProduct(row as Record<string, unknown>));
+  const products = result.rows.map((row) => mapMenuProduct(row as Record<string, unknown>));
+  await populateInventoryItemsStock(products);
+  return products;
 }

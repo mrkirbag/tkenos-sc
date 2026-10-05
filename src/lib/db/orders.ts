@@ -5,7 +5,11 @@ import {
   getDeliveryPaymentTiming,
   type DeliveryPaymentTiming,
 } from '@/lib/orders/delivery-flow';
-import { resolveInventoryDeduction, type InventoryDeduction } from '@/lib/inventory/menu-inventory';
+import {
+  resolveInventoryDeduction,
+  resolveMenuInventoryDeductions,
+  type InventoryDeduction,
+} from '@/lib/inventory/menu-inventory';
 import {
   ADICIONALES_CATEGORY,
   parseOrderItemExtras,
@@ -167,6 +171,14 @@ async function resolveDeductionsForStoredItem(
 ): Promise<InventoryDeduction[]> {
   const deductions: InventoryDeduction[] = [];
 
+  // 1. Insumos fijos del producto (Receta de insumos: cajas, bolsas, salsas, tequeños base)
+  const mainLink = await getMenuProductInventoryLink(item.product_id);
+  if (mainLink) {
+    const fixedDeductions = resolveMenuInventoryDeductions(item.product_id, mainLink, quantity);
+    deductions.push(...fixedDeductions);
+  }
+
+  // 2. Sabores seleccionados por el cliente o mesero (si existen opciones con insumo)
   if (item.flavors && item.flavors.length > 0) {
     for (const flavor of item.flavors) {
       if (flavor.inventoryProductId) {
@@ -175,12 +187,6 @@ async function resolveDeductionsForStoredItem(
           quantity: (flavor.units ?? 1) * quantity,
         });
       }
-    }
-  } else {
-    const mainLink = await getMenuProductInventoryLink(item.product_id);
-    if (mainLink) {
-      const mainDeduction = resolveInventoryDeduction(item.product_id, mainLink, quantity);
-      if (mainDeduction) deductions.push(mainDeduction);
     }
   }
 

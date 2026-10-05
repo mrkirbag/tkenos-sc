@@ -28,6 +28,7 @@ export type ProductFlavorGroup = {
   name: string;
   units: number;
   required: boolean;
+  allow_half_and_half?: boolean;
   options: ProductFlavorOption[];
 };
 
@@ -37,6 +38,11 @@ export type OrderItemFlavor = {
   optionId: string;
   optionName: string;
   inventoryProductId?: string | null;
+  units: number;
+};
+
+export type ProductInventoryItem = {
+  inventory_product_id: string;
   units: number;
 };
 
@@ -51,6 +57,7 @@ export type Product = {
   active: boolean;
   inventory_product_id?: string | null;
   inventory_units_per_sale?: number;
+  inventory_items?: ProductInventoryItem[] | null;
   flavor_groups?: ProductFlavorGroup[] | null;
   stock?: number | null;
   has_inventory?: boolean;

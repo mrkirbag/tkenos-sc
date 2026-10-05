@@ -9,7 +9,12 @@ const AUTH_PATHS = new Set(['/login']);
 export const onRequest = defineMiddleware(async (context, next) => {
   const { pathname } = context.url;
 
-  if (pathname.startsWith(PROTECTED_PREFIX) || pathname.startsWith('/api/') || pathname === '/') {
+  if (
+    pathname.startsWith(PROTECTED_PREFIX) ||
+    pathname.startsWith('/api/') ||
+    pathname.startsWith('/producto') ||
+    pathname === '/'
+  ) {
     await ensureMigrations();
   }
 

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { BookOpen, LogOut, Menu, X } from 'lucide-react';
+import { BookOpen, ExternalLink, LogOut, Menu, X } from 'lucide-react';
 
 import { brand } from '@/data/brand';
 import { getNavSectionsForRole, isNavItemActive, type NavSection } from '@/data/navigation';
@@ -153,9 +153,16 @@ export default function Navbar({ currentPath, username, role }: NavbarProps) {
             </div>
           </div>
 
-          <a href="/docs" className="navbar__docs-link" title="Manual de Usuario">
+          <a
+            href="/docs"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="navbar__docs-link"
+            title="Manual de Usuario (abre en pestaña nueva)"
+          >
             <BookOpen size={18} strokeWidth={2} aria-hidden />
             <span>Manual de Usuario</span>
+            <ExternalLink size={13} style={{ marginLeft: 'auto', opacity: 0.7 }} aria-hidden />
           </a>
 
           <form action="/api/auth/logout" method="post" className="navbar__logout-form">

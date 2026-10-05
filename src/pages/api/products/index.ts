@@ -34,6 +34,7 @@ export const POST: APIRoute = async (context) => {
     description?: string | null;
     inventory_product_id?: string | null;
     inventory_units_per_sale?: number;
+    inventory_items?: any;
     flavor_groups?: any;
   };
 
@@ -73,6 +74,7 @@ export const POST: APIRoute = async (context) => {
       description: body.description ?? null,
       inventory_product_id: body.inventory_product_id ?? null,
       inventory_units_per_sale: body.inventory_units_per_sale,
+      inventory_items: body.inventory_items ?? null,
       flavor_groups: body.flavor_groups ?? null,
     });
     return Response.json({ product }, { status: 201 });

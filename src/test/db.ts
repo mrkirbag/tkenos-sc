@@ -1,6 +1,7 @@
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 
 import { createClient, type Client } from '@libsql/client';
 import bcrypt from 'bcryptjs';
@@ -14,7 +15,7 @@ let tempDir: string | null = null;
 
 export async function setupTestDatabase(): Promise<void> {
   tempDir = mkdtempSync(join(tmpdir(), 'delicious-burger-test-'));
-  process.env.TURSO_URL = `file:${join(tempDir, 'test.db')}`;
+  process.env.TURSO_URL = pathToFileURL(join(tempDir, 'test.db')).href;
   process.env.TURSO_AUTH_TOKEN = '';
   process.env.JWT_SECRET = 'test-jwt-secret-with-at-least-32-characters';
 

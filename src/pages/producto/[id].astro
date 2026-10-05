@@ -323,48 +323,183 @@ const flavorGroups = product.flavor_groups ?? [];
                     </div>
 
                     <div class="prod-flavor-groups">
-                      {flavorGroups.map((group) => (
-                        <div class="prod-flavor-group" data-flavor-group={group.id} data-required={group.required ? "true" : "false"}>
-                          <div class="prod-flavor-group__header">
-                            <span class="prod-flavor-group__name">{group.name}</span>
-                            <span class="prod-flavor-group__badge">
-                              {group.units ? `${group.units} uds.` : ''} {group.required ? 'Obligatorio' : 'Opcional'}
-                            </span>
-                          </div>
+                      {flavorGroups.map((group) => {
+                        const allowsHalf = (group.allow_half_and_half !== false) && (group.units >= 2);
+                        const half1 = Math.ceil(group.units / 2);
+                        const half2 = Math.floor(group.units / 2);
 
+                        return (
                           <div
-                            class="prod-flavor-options"
-                            role="radiogroup"
-                            aria-label={group.name}
+                            class="prod-flavor-group"
+                            data-flavor-group={group.id}
+                            data-required={group.required ? "true" : "false"}
+                            data-allows-half={allowsHalf ? "true" : "false"}
+                            data-units={group.units}
+                            data-half1={half1}
+                            data-half2={half2}
                           >
-                            {group.options.map((opt, optIdx) => (
-                              <label class="prod-flavor-option">
-                                <input
-                                  type="radio"
-                                  name={`flavor_${group.id}`}
-                                  value={opt.id}
+                            <div class="prod-flavor-group__header">
+                              <span class="prod-flavor-group__name">{group.name}</span>
+                              <span class="prod-flavor-group__badge">
+                                {group.units ? `${group.units} piezas` : ''} {group.required ? '· Obligatorio' : '· Opcional'}
+                              </span>
+                            </div>
+
+                            {allowsHalf && (
+                              <div class="prod-flavor-mode-switch" role="tablist">
+                                <button
+                                  type="button"
+                                  class="prod-flavor-mode-btn prod-flavor-mode-btn--active"
+                                  data-mode="single"
                                   data-group-id={group.id}
-                                  data-group-name={group.name}
-                                  data-option-id={opt.id}
-                                  data-option-name={opt.name}
-                                  data-inventory-product-id={opt.inventory_product_id ?? ''}
-                                  data-units={group.units ?? 1}
-                                  checked={optIdx === 0}
-                                  class="prod-flavor-option__input"
-                                />
-                                <span class="prod-flavor-option__box">
-                                  <span class="prod-flavor-option__check" aria-hidden="true">
-                                    <svg viewBox="0 0 20 20" width="12" height="12" fill="currentColor">
-                                      <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
-                                    </svg>
-                                  </span>
-                                  <span class="prod-flavor-option__text">{opt.name}</span>
-                                </span>
-                              </label>
-                            ))}
+                                >
+                                  Todo Completo ({group.units} uds)
+                                </button>
+                                <button
+                                  type="button"
+                                  class="prod-flavor-mode-btn"
+                                  data-mode="half"
+                                  data-group-id={group.id}
+                                >
+                                  Mitad y Mitad ({half1} / {half2} uds)
+                                </button>
+                              </div>
+                            )}
+
+                            <!-- VISTA COMPLETO (1 SABOR) -->
+                            <div class="prod-flavor-mode-view prod-flavor-mode-view--single" data-view-mode="single" data-group-id={group.id}>
+                              {allowsHalf && (
+                                <div class="prod-flavor-half-title" style="margin-bottom: 0.5rem;">
+                                  <span>Sabor para las {group.units} unidades:</span>
+                                </div>
+                              )}
+                              <div
+                                class="prod-flavor-options"
+                                role="radiogroup"
+                                aria-label={group.name}
+                              >
+                                {!group.required && (
+                                  <label class="prod-flavor-option">
+                                    <input
+                                      type="radio"
+                                      name={`flavor_${group.id}`}
+                                      value=""
+                                      checked={true}
+                                      class="prod-flavor-option__input"
+                                    />
+                                    <span class="prod-flavor-option__box">
+                                      <span class="prod-flavor-option__check" aria-hidden="true">
+                                        <svg viewBox="0 0 20 20" width="12" height="12" fill="currentColor">
+                                          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                        </svg>
+                                      </span>
+                                      <span class="prod-flavor-option__text">Sin preferencia</span>
+                                    </span>
+                                  </label>
+                                )}
+                                {group.options.map((opt, optIdx) => (
+                                  <label class="prod-flavor-option">
+                                    <input
+                                      type="radio"
+                                      name={`flavor_${group.id}`}
+                                      value={opt.id}
+                                      data-group-id={group.id}
+                                      data-group-name={allowsHalf ? `${group.name} (Completo)` : group.name}
+                                      data-option-id={opt.id}
+                                      data-option-name={allowsHalf ? `${opt.name} (${group.units} uds)` : opt.name}
+                                      data-inventory-product-id={opt.inventory_product_id ?? ''}
+                                      data-units={group.units ?? 1}
+                                      checked={group.required && optIdx === 0}
+                                      class="prod-flavor-option__input"
+                                    />
+                                    <span class="prod-flavor-option__box">
+                                      <span class="prod-flavor-option__check" aria-hidden="true">
+                                        <svg viewBox="0 0 20 20" width="12" height="12" fill="currentColor">
+                                          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                        </svg>
+                                      </span>
+                                      <span class="prod-flavor-option__text">{opt.name}</span>
+                                    </span>
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+
+                            <!-- VISTA MITAD Y MITAD (2 SABORES) -->
+                            {allowsHalf && (
+                              <div class="prod-flavor-mode-view prod-flavor-mode-view--half" data-view-mode="half" data-group-id={group.id} style="display: none;">
+                                <div class="prod-flavor-half-section">
+                                  <div class="prod-flavor-half-title">
+                                    <span class="prod-flavor-half-pill">1ª Mitad</span>
+                                    <span>Elige sabor para {half1} unidades:</span>
+                                  </div>
+                                  <div class="prod-flavor-options" role="radiogroup" aria-label="Primera mitad">
+                                    {group.options.map((opt, optIdx) => (
+                                      <label class="prod-flavor-option">
+                                        <input
+                                          type="radio"
+                                          name={`flavor_${group.id}_half1`}
+                                          value={opt.id}
+                                          data-group-id={group.id}
+                                          data-group-name={`${group.name} (Mitad 1)`}
+                                          data-option-id={opt.id}
+                                          data-option-name={`${opt.name} (${half1} uds)`}
+                                          data-inventory-product-id={opt.inventory_product_id ?? ''}
+                                          data-units={half1}
+                                          checked={optIdx === 0}
+                                          class="prod-flavor-option__input"
+                                        />
+                                        <span class="prod-flavor-option__box">
+                                          <span class="prod-flavor-option__check" aria-hidden="true">
+                                            <svg viewBox="0 0 20 20" width="12" height="12" fill="currentColor">
+                                              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                            </svg>
+                                          </span>
+                                          <span class="prod-flavor-option__text">{opt.name}</span>
+                                        </span>
+                                      </label>
+                                    ))}
+                                  </div>
+                                </div>
+
+                                <div class="prod-flavor-half-section" style="margin-top: 0.85rem;">
+                                  <div class="prod-flavor-half-title">
+                                    <span class="prod-flavor-half-pill">2ª Mitad</span>
+                                    <span>Elige sabor para {half2} unidades:</span>
+                                  </div>
+                                  <div class="prod-flavor-options" role="radiogroup" aria-label="Segunda mitad">
+                                    {group.options.map((opt, optIdx) => (
+                                      <label class="prod-flavor-option">
+                                        <input
+                                          type="radio"
+                                          name={`flavor_${group.id}_half2`}
+                                          value={opt.id}
+                                          data-group-id={group.id}
+                                          data-group-name={`${group.name} (Mitad 2)`}
+                                          data-option-id={opt.id}
+                                          data-option-name={`${opt.name} (${half2} uds)`}
+                                          data-inventory-product-id={opt.inventory_product_id ?? ''}
+                                          data-units={half2}
+                                          checked={group.options.length > 1 ? optIdx === 1 : optIdx === 0}
+                                          class="prod-flavor-option__input"
+                                        />
+                                        <span class="prod-flavor-option__box">
+                                          <span class="prod-flavor-option__check" aria-hidden="true">
+                                            <svg viewBox="0 0 20 20" width="12" height="12" fill="currentColor">
+                                              <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+                                            </svg>
+                                          </span>
+                                          <span class="prod-flavor-option__text">{opt.name}</span>
+                                        </span>
+                                      </label>
+                                    ))}
+                                  </div>
+                                </div>
+                              </div>
+                            )}
                           </div>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 )
@@ -639,17 +774,11 @@ const flavorGroups = product.flavor_groups ?? [];
                   </button>
 
                   <div
-                    class="prod-feedback-toast"
+                    class="prod-feedback-alert"
                     id="product-feedback"
                     hidden
                     aria-live="polite"
-                  >
-                    <span class="prod-feedback-toast__icon">✓</span>
-                    <span>¡Agregado con éxito a tu pedido!</span>
-                    <a href="/pedido" class="prod-feedback-toast__link"
-                      >Ver pedido →</a
-                    >
-                  </div>
+                  ></div>
                 </div>
               </div>
             </form>
@@ -816,20 +945,89 @@ const flavorGroups = product.flavor_groups ?? [];
         inventoryProductId?: string | null;
         units: number;
       }> {
-        const inputs = Array.from(
-          form?.querySelectorAll<HTMLInputElement>(
-            'input[name^="flavor_"]:checked',
-          ) ?? [],
-        );
-        return inputs.map((input) => ({
-          groupId: input.dataset.groupId ?? "",
-          groupName: input.dataset.groupName ?? "",
-          optionId: input.dataset.optionId ?? "",
-          optionName: input.dataset.optionName ?? "",
-          inventoryProductId: input.dataset.inventoryProductId || null,
-          units: Number(input.dataset.units ?? 1),
-        }));
+        const groups = Array.from(form?.querySelectorAll<HTMLElement>('.prod-flavor-group') ?? []);
+        const flavors: Array<{
+          groupId: string;
+          groupName: string;
+          optionId: string;
+          optionName: string;
+          inventoryProductId?: string | null;
+          units: number;
+        }> = [];
+
+        for (const grp of groups) {
+          const groupId = grp.dataset.flavorGroup;
+          if (!groupId) continue;
+          const allowsHalf = grp.dataset.allowsHalf === 'true';
+          const activeBtn = grp.querySelector<HTMLElement>('.prod-flavor-mode-btn--active');
+          const mode = allowsHalf && activeBtn ? (activeBtn.dataset.mode || 'single') : 'single';
+
+          if (mode === 'single') {
+            const checked = grp.querySelector<HTMLInputElement>(`input[name="flavor_${groupId}"]:checked`);
+            if (checked && checked.value && checked.dataset.optionId) {
+              flavors.push({
+                groupId,
+                groupName: checked.dataset.groupName || 'Sabor',
+                optionId: checked.dataset.optionId,
+                optionName: checked.dataset.optionName || checked.value,
+                inventoryProductId: checked.dataset.inventoryProductId || null,
+                units: Number(checked.dataset.units || 1),
+              });
+            }
+          } else {
+            const checked1 = grp.querySelector<HTMLInputElement>(`input[name="flavor_${groupId}_half1"]:checked`);
+            if (checked1 && checked1.value && checked1.dataset.optionId) {
+              flavors.push({
+                groupId,
+                groupName: checked1.dataset.groupName || 'Mitad 1',
+                optionId: checked1.dataset.optionId,
+                optionName: checked1.dataset.optionName || checked1.value,
+                inventoryProductId: checked1.dataset.inventoryProductId || null,
+                units: Number(checked1.dataset.units || 1),
+              });
+            }
+
+            const checked2 = grp.querySelector<HTMLInputElement>(`input[name="flavor_${groupId}_half2"]:checked`);
+            if (checked2 && checked2.value && checked2.dataset.optionId) {
+              flavors.push({
+                groupId,
+                groupName: checked2.dataset.groupName || 'Mitad 2',
+                optionId: checked2.dataset.optionId,
+                optionName: checked2.dataset.optionName || checked2.value,
+                inventoryProductId: checked2.dataset.inventoryProductId || null,
+                units: Number(checked2.dataset.units || 1),
+              });
+            }
+          }
+        }
+
+        return flavors;
       }
+
+      // Conmutador de modo para combos (Todo Completo vs Mitad y Mitad)
+      form?.querySelectorAll<HTMLButtonElement>('.prod-flavor-mode-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const targetMode = btn.dataset.mode;
+          const groupEl = btn.closest('.prod-flavor-group');
+          if (!groupEl) return;
+
+          groupEl.querySelectorAll('.prod-flavor-mode-btn').forEach((b) => {
+            b.classList.remove('prod-flavor-mode-btn--active');
+          });
+          btn.classList.add('prod-flavor-mode-btn--active');
+
+          const singleView = groupEl.querySelector<HTMLElement>('.prod-flavor-mode-view--single');
+          const halfView = groupEl.querySelector<HTMLElement>('.prod-flavor-mode-view--half');
+
+          if (targetMode === 'single') {
+            if (singleView) singleView.style.display = '';
+            if (halfView) halfView.style.display = 'none';
+          } else {
+            if (singleView) singleView.style.display = 'none';
+            if (halfView) halfView.style.display = '';
+          }
+        });
+      });
 
       let currentCurrency: PublicCurrency = "COP";
       try {
@@ -1039,13 +1237,25 @@ const flavorGroups = product.flavor_groups ?? [];
             form?.querySelectorAll<HTMLElement>('.prod-flavor-group[data-required="true"]') ?? []
           ).find((grp) => {
             const grpId = grp.dataset.flavorGroup;
-            return !form?.querySelector(`input[name="flavor_${grpId}"]:checked`);
+            if (!grpId) return false;
+            const allowsHalf = grp.dataset.allowsHalf === 'true';
+            const activeBtn = grp.querySelector<HTMLElement>('.prod-flavor-mode-btn--active');
+            const mode = allowsHalf && activeBtn ? (activeBtn.dataset.mode || 'single') : 'single';
+
+            if (mode === 'single') {
+              const checked = grp.querySelector<HTMLInputElement>(`input[name="flavor_${grpId}"]:checked`);
+              return !checked || !checked.value;
+            } else {
+              const checked1 = grp.querySelector<HTMLInputElement>(`input[name="flavor_${grpId}_half1"]:checked`);
+              const checked2 = grp.querySelector<HTMLInputElement>(`input[name="flavor_${grpId}_half2"]:checked`);
+              return !checked1 || !checked1.value || !checked2 || !checked2.value;
+            }
           });
 
           if (missingGroup) {
             const grpName = missingGroup.querySelector('.prod-flavor-group__name')?.textContent || 'sabor';
             if (feedback) {
-              feedback.textContent = `Por favor selecciona una opción para: ${grpName}`;
+              feedback.textContent = `Por favor selecciona los sabores requeridos para: ${grpName}`;
               feedback.hidden = false;
               window.clearTimeout(feedbackTimeoutId);
               feedbackTimeoutId = window.setTimeout(() => {
@@ -1070,27 +1280,26 @@ const flavorGroups = product.flavor_groups ?? [];
             });
             notifyCartChanged();
             updateNavCartBadge();
-            
-            // Redirigir al catálogo en lugar de abrir el drawer
+
+            // Guardar datos para la notificación push en el catálogo
+            try {
+              sessionStorage.setItem(
+                'cart:push_toast',
+                JSON.stringify({
+                  id: productId,
+                  name: productName,
+                  imageUrl: productImageUrl,
+                  quantity,
+                  price: productPrice,
+                  timestamp: Date.now(),
+                })
+              );
+            } catch {
+              // sessionStorage no disponible
+            }
+
+            // Redirigir al catálogo principal de inmediato
             window.location.href = "/";
-
-            // Smooth feedback & micro-interaction
-            if (submitBtn) {
-              submitBtn.classList.add("is-success");
-              window.setTimeout(() => {
-                submitBtn.classList.remove("is-success");
-              }, 600);
-            }
-
-            if (feedback) {
-              if (feedbackTimeoutId) {
-                window.clearTimeout(feedbackTimeoutId);
-              }
-              feedback.hidden = false;
-              feedbackTimeoutId = window.setTimeout(() => {
-                feedback.hidden = true;
-              }, 4000);
-            }
           } catch (err) {
             if (feedback) {
               feedback.textContent =
@@ -1741,6 +1950,67 @@ const flavorGroups = product.flavor_groups ?? [];
     color: var(--color-secondary);
   }
 
+  .prod-flavor-mode-switch {
+    display: flex;
+    background: color-mix(in srgb, var(--color-primary) 10%, var(--color-background));
+    border: 1.5px solid var(--color-border);
+    border-radius: 0.75rem;
+    padding: 0.25rem;
+    gap: 0.25rem;
+    margin-bottom: 0.85rem;
+  }
+
+  .prod-flavor-mode-btn {
+    flex: 1;
+    padding: 0.55rem 0.75rem;
+    border-radius: 0.55rem;
+    border: none;
+    background: transparent;
+    color: var(--color-text-muted);
+    font-size: 0.8125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+  }
+
+  .prod-flavor-mode-btn:hover {
+    color: var(--color-primary);
+  }
+
+  .prod-flavor-mode-btn--active {
+    background: var(--color-secondary);
+    color: var(--color-primary-foreground) !important;
+    font-weight: 700;
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--color-secondary) 30%, transparent);
+  }
+
+  .prod-flavor-half-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .prod-flavor-half-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--color-text-muted);
+  }
+
+  .prod-flavor-half-pill {
+    display: inline-flex;
+    padding: 0.15rem 0.5rem;
+    border-radius: 9999px;
+    background: color-mix(in srgb, var(--color-secondary) 20%, transparent);
+    color: var(--color-secondary);
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
   .prod-flavor-options {
     display: flex;
     flex-wrap: wrap;
@@ -2108,9 +2378,7 @@ const flavorGroups = product.flavor_groups ?? [];
   }
 
   .prod-submit-btn.is-success {
-    background: var(--color-success);
-    transform: scale(1.02);
-    color: var(--color-primary-foreground);
+    transform: scale(0.98);
   }
 
   .prod-submit-btn--closed,
@@ -2137,43 +2405,25 @@ const flavorGroups = product.flavor_groups ?? [];
     font-weight: 800;
   }
 
-  /* TOAST FEEDBACK */
-  .prod-feedback-toast {
+  /* INLINE FEEDBACK ALERT (Solo errores / validaciones) */
+  .prod-feedback-alert {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 0.6rem;
     padding: 0.75rem 1rem;
     border-radius: 0.75rem;
-    background: var(--color-success);
-    border: 1px solid rgba(16, 185, 129, 0.35);
-    color: var(--color-primary-foreground);
+    background: rgba(208, 0, 0, 0.16);
+    border: 1px solid rgba(208, 0, 0, 0.38);
+    color: #ff9e9e;
     font-size: 0.875rem;
-    font-weight: 700;
+    font-weight: 600;
+    text-align: center;
     animation: prodToastIn 0.3s ease;
   }
 
-  .prod-feedback-toast[hidden] {
+  .prod-feedback-alert[hidden] {
     display: none !important;
-  }
-
-  .prod-feedback-toast__icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.25rem;
-    height: 1.25rem;
-    background: var(--color-primary-foreground);
-    color: var(--color-success);
-    border-radius: 9999px;
-    font-size: 0.75rem;
-  }
-
-  .prod-feedback-toast__link {
-    color: var(--color-primary-foreground);
-    text-decoration: underline;
-    font-weight: 800;
-    margin-left: 0.25rem;
   }
 
   @keyframes prodToastIn {

@@ -57,6 +57,7 @@ import type { ExchangeRates, Product } from '@/lib/db/types';
 import { useModalBodyLock } from '@/lib/ui/modal-utils';
 
 import './CartDrawer.css';
+import { CartPushToast, PUSH_TOAST_EVENT } from './CartPushToast';
 
 export interface CartDrawerProps {
   brandName?: string;
@@ -440,6 +441,18 @@ export default function CartDrawer({
     notifyCartChanged();
     syncCart();
 
+    window.dispatchEvent(
+      new CustomEvent(PUSH_TOAST_EVENT, {
+        detail: {
+          id: product.id,
+          name: product.name,
+          imageUrl: product.image_url ?? null,
+          quantity: 1,
+          price: product.price,
+        },
+      }),
+    );
+
     setRecentlyAddedId(product.id);
     window.setTimeout(() => {
       setRecentlyAddedId((curr) => (curr === product.id ? null : curr));
@@ -495,15 +508,15 @@ export default function CartDrawer({
 
     // Modalidad label
     const modalidadMap: Record<OrderType, string> = {
-      delivery: '🛵 A Domicilio',
-      takeaway: '🛍️ Para Llevar (Retiro en local)',
+      delivery: 'A Domicilio',
+      takeaway: 'Para Llevar (Retiro en local)',
     };
 
     // Payment label
     const paymentMap: Record<PaymentMethod, string> = {
-      cash: '💵 Efectivo',
-      transfer: '📱 Transferencia / Pago móvil',
-      card: '💳 Tarjeta de débito/crédito',
+      cash: 'Efectivo',
+      transfer: 'Transferencia / Pago móvil',
+      card: 'Tarjeta de débito/crédito',
     };
 
     // Construct WhatsApp message
@@ -515,12 +528,12 @@ export default function CartDrawer({
       }
 
       if (item.notes) {
-        line += `\n   ↳ 📝 _${item.notes}_`;
+        line += `\n   ↳ Nota: _${item.notes}_`;
       }
 
       if (item.flavors && item.flavors.length > 0) {
         const flavorsText = item.flavors.map((f) => `${f.groupName}: ${f.optionName}`).join(' | ');
-        line += `\n   ↳ 🎯 Sabores: ${flavorsText}`;
+        line += `\n   ↳ Sabores: ${flavorsText}`;
       }
 
       if (item.adicionales.length > 0) {
@@ -532,7 +545,7 @@ export default function CartDrawer({
             return `${a.name} (+${formatCop(a.price)})`;
           })
           .join(', ');
-        line += `\n   ↳ ➕ Extras: ${extraNames}`;
+        line += `\n   ↳ Extras: ${extraNames}`;
       }
 
       return line;
@@ -541,7 +554,7 @@ export default function CartDrawer({
     const boxCost = (rates as any).extra_box_cost ?? 0;
     const hasBoxCost = packagingPreference === 'separados' && boxCost > 0;
     if (hasBoxCost) {
-      let boxLine = `📦 *Caja Extra (Pedidos separados)* — ${formatCop(boxCost)}`;
+      let boxLine = `*Caja Extra (Pedidos separados)* — ${formatCop(boxCost)}`;
       if (activeCurrency !== 'COP') {
         boxLine += ` (~ ${formatPriceByCurrency(boxCost, activeCurrency, rates)})`;
       }
@@ -551,15 +564,17 @@ export default function CartDrawer({
     const grandTotal = total + (hasBoxCost ? boxCost : 0);
 
     const lines: string[] = [
-      `👋 *¡Hola, ${brandName}! Deseo realizar el siguiente pedido:*`,
+      `*¡Hola, ${brandName}! Deseo realizar el siguiente pedido:*`,
       '',
-      '📋 *DETALLE DEL PEDIDO:*',
+      '*DETALLE DEL PEDIDO:*',
       ...orderLines,
       '',
-      `💰 *TOTAL A PAGAR: ${formatCop(grandTotal)}${activeCurrency !== 'COP' ? ` (~ ${formatPriceByCurrency(grandTotal, activeCurrency, rates)})` : ''
+      `*TOTAL A PAGAR: ${formatCop(grandTotal)}${
+        activeCurrency !== 'COP' ? ` (~ ${formatPriceByCurrency(grandTotal, activeCurrency, rates)})` : ''
       }*`,
+      ...(orderType === 'delivery' ? ['*El delivery no está incluido en el total*'] : []),
       '',
-      '👤 *DATOS DEL CLIENTE:*',
+      '*DATOS DEL CLIENTE:*',
       `• Nombre: *${trimmedName}*`,
       `• Teléfono: *${customerPhone.trim()}*`,
       `• Modalidad: *${modalidadMap[orderType]}*`,
@@ -912,26 +927,23 @@ export default function CartDrawer({
                               </div>
                             )}
 
-                            {item.hasInventory && item.stock !== null && item.stock !== undefined && (
-                              <div className="cart-item__stock-info">
-                                {item.quantity >
-                                  Math.max(
-                                    0,
-                                    item.stock -
+                            {item.hasInventory &&
+                              item.stock !== null &&
+                              item.stock !== undefined &&
+                              item.quantity >
+                                Math.max(
+                                  0,
+                                  item.stock -
                                     items
                                       .filter((i) => i.productId === item.productId && i.key !== item.key)
                                       .reduce((s, i) => s + i.quantity, 0),
-                                  ) ? (
+                                ) && (
+                                <div className="cart-item__stock-info">
                                   <span className="cart-item__stock-tag cart-item__stock-tag--warning">
-                                    ⚠️ Excede el stock disponible ({item.stock} en total)
+                                    ⚠️ Excede la cantidad disponible ({item.stock} en total)
                                   </span>
-                                ) : (
-                                  <span className="cart-item__stock-tag">
-                                    Stock disponible: {item.stock}
-                                  </span>
-                                )}
-                              </div>
-                            )}
+                                </div>
+                              )}
 
                             <div className="cart-item__bottom-row">
                               <div className="cart-item__price-box">
@@ -1049,8 +1061,8 @@ export default function CartDrawer({
                               )}
                               <span
                                 className={`cart-suggestion-card__cat-badge ${isDrinkProduct
-                                    ? 'cart-suggestion-card__cat-badge--drink'
-                                    : 'cart-suggestion-card__cat-badge--topping'
+                                  ? 'cart-suggestion-card__cat-badge--drink'
+                                  : 'cart-suggestion-card__cat-badge--topping'
                                   }`}
                               >
                                 {isDrinkProduct ? 'Bebida' : 'Salsa'}
@@ -1407,6 +1419,12 @@ export default function CartDrawer({
           )}
         </aside>
       </div>
+
+      {/* PUSH NOTIFICATION TOAST */}
+      <CartPushToast
+        brandName={brandName}
+        onOpenCart={() => setIsOpen(true)}
+      />
     </>
   );
 }

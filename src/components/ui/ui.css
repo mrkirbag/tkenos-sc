@@ -332,3 +332,40 @@
   border-top: 1.5px solid var(--color-secondary);
   background: var(--color-primary);
 }
+
+@media (max-width: 640px) {
+  .ui-modal {
+    padding: 0.5rem;
+    align-items: center;
+  }
+
+  .ui-modal__panel {
+    width: 100%;
+    max-width: 100%;
+    max-height: min(94dvh, calc(100vh - 1rem));
+    border-radius: var(--radius-md);
+  }
+
+  .ui-modal__header {
+    padding: 0.85rem 1rem;
+  }
+
+  .ui-modal__title-wrap h2,
+  .ui-modal__title-wrap h3 {
+    font-size: 1rem;
+  }
+
+  .ui-modal__body {
+    padding: 1rem 0.85rem;
+  }
+
+  .ui-modal__footer {
+    padding: 0.85rem 1rem;
+    flex-direction: column-reverse;
+  }
+
+  .ui-modal__footer > button {
+    width: 100%;
+    justify-content: center;
+  }
+}

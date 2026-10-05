@@ -616,6 +616,11 @@ export async function runMigrations(dbClient?: Client): Promise<void> {
     console.log('✓ products.flavor_groups');
   }
 
+  if (await tableExists(db, 'products') && !(await columnExists(db, 'products', 'inventory_items'))) {
+    await db.execute('ALTER TABLE products ADD COLUMN inventory_items TEXT');
+    console.log('✓ products.inventory_items');
+  }
+
   if (await tableExists(db, 'order_items') && !(await columnExists(db, 'order_items', 'flavors'))) {
     await db.execute('ALTER TABLE order_items ADD COLUMN flavors TEXT');
     console.log('✓ order_items.flavors');
