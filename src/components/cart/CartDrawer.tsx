@@ -156,13 +156,20 @@ export default function CartDrawer({
     const handleCurrencyChange = (event: Event) => {
       const customEvent = event as CustomEvent<{
         currency: PublicCurrency;
-        rates?: { usd_rate: number; bs_rate: number };
+        rates?: ExchangeRates | { usd_rate: number; bs_rate: number; extra_box_cost?: number };
       }>;
       if (customEvent.detail?.currency) {
         setActiveCurrency(customEvent.detail.currency);
       }
       if (customEvent.detail?.rates) {
-        setRates(customEvent.detail.rates);
+        setRates((prev) => ({
+          ...prev,
+          ...customEvent.detail.rates,
+          extra_box_cost:
+            customEvent.detail.rates?.extra_box_cost !== undefined
+              ? customEvent.detail.rates.extra_box_cost
+              : (prev as any).extra_box_cost ?? 0,
+        }));
       }
     };
 
@@ -527,25 +534,40 @@ export default function CartDrawer({
         line += ` (~ ${formatPriceByCurrency(unit * item.quantity, activeCurrency, rates)})`;
       }
 
-      if (item.notes) {
-        line += `\n   ↳ Nota: _${item.notes}_`;
-      }
-
       if (item.flavors && item.flavors.length > 0) {
-        const flavorsText = item.flavors.map((f) => `${f.groupName}: ${f.optionName}`).join(' | ');
-        line += `\n   ↳ Sabores: ${flavorsText}`;
+        if (item.flavors.length === 1) {
+          const f = item.flavors[0];
+          line += `\n   ↳ ${f.groupName}: *${f.optionName}*`;
+        } else {
+          line += `\n   ↳ Sabores:`;
+          for (const f of item.flavors) {
+            line += `\n     • ${f.groupName}: *${f.optionName}*`;
+          }
+        }
       }
 
       if (item.adicionales.length > 0) {
-        const extraNames = item.adicionales
-          .map((a) => {
-            if (activeCurrency !== 'COP') {
-              return `${a.name} (+${formatCop(a.price)} / +${formatPriceByCurrency(a.price, activeCurrency, rates)})`;
-            }
-            return `${a.name} (+${formatCop(a.price)})`;
-          })
-          .join(', ');
-        line += `\n   ↳ Extras: ${extraNames}`;
+        if (item.adicionales.length === 1) {
+          const a = item.adicionales[0];
+          const extraPrice =
+            activeCurrency !== 'COP'
+              ? `(+${formatCop(a.price)} / +${formatPriceByCurrency(a.price, activeCurrency, rates)})`
+              : `(+${formatCop(a.price)})`;
+          line += `\n   ↳ Extra: ${a.name} ${extraPrice}`;
+        } else {
+          line += `\n   ↳ Extras:`;
+          for (const a of item.adicionales) {
+            const extraPrice =
+              activeCurrency !== 'COP'
+                ? `(+${formatCop(a.price)} / +${formatPriceByCurrency(a.price, activeCurrency, rates)})`
+                : `(+${formatCop(a.price)})`;
+            line += `\n     • ${a.name} ${extraPrice}`;
+          }
+        }
+      }
+
+      if (item.notes) {
+        line += `\n   ↳ Nota: _${item.notes}_`;
       }
 
       return line;
@@ -567,7 +589,7 @@ export default function CartDrawer({
       `*¡Hola, ${brandName}! Deseo realizar el siguiente pedido:*`,
       '',
       '*DETALLE DEL PEDIDO:*',
-      ...orderLines,
+      orderLines.join('\n\n'),
       '',
       `*TOTAL A PAGAR: ${formatCop(grandTotal)}${
         activeCurrency !== 'COP' ? ` (~ ${formatPriceByCurrency(grandTotal, activeCurrency, rates)})` : ''
@@ -672,6 +694,8 @@ export default function CartDrawer({
           delivery_address: orderType === 'delivery' ? customerAddress.trim() : undefined,
           delivery_notes: (packagingPreference === 'separados' ? 'Empaquetar: Separados\n' : '') + orderNotes.trim(),
           payment_method_hint: paymentMethod,
+          packaging_preference: packagingPreference,
+          packaging_fee: packagingPreference === 'separados' ? ((rates as any).extra_box_cost ?? 0) : 0,
           items: apiItems,
         }),
       });

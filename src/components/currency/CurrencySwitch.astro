@@ -12,6 +12,7 @@ const { rates, class: className = "" } = Astro.props;
 const safeRates = {
   usd_rate: rates?.usd_rate && rates.usd_rate > 0 ? rates.usd_rate : 4000,
   bs_rate: rates?.bs_rate && rates.bs_rate > 0 ? rates.bs_rate : 50,
+  extra_box_cost: rates?.extra_box_cost ?? 0,
 };
 ---
 
@@ -90,9 +91,9 @@ const safeRates = {
 
     const rates = (
       window as unknown as {
-        __APP_EXCHANGE_RATES__?: { usd_rate: number; bs_rate: number };
+        __APP_EXCHANGE_RATES__?: { usd_rate: number; bs_rate: number; extra_box_cost?: number };
       }
-    ).__APP_EXCHANGE_RATES__ || { usd_rate: 4000, bs_rate: 50 };
+    ).__APP_EXCHANGE_RATES__ || { usd_rate: 4000, bs_rate: 50, extra_box_cost: 0 };
 
     // Get stored or default currency
     let currentCurrency: PublicCurrency = "COP";

@@ -12,6 +12,8 @@ export const POST: APIRoute = async (context) => {
     delivery_address?: string;
     delivery_notes?: string;
     payment_method_hint?: string;
+    packaging_preference?: 'juntos' | 'separados';
+    packaging_fee?: number;
     items?: Array<{
       product_id?: string;
       quantity?: number;
@@ -86,6 +88,8 @@ export const POST: APIRoute = async (context) => {
       customer_phone: body.customer_phone!.trim(),
       delivery_address: orderType === 'delivery' ? body.delivery_address?.trim() : null,
       delivery_notes: body.delivery_notes?.trim(),
+      packaging_preference: body.packaging_preference,
+      packaging_fee: body.packaging_fee,
       items,
     });
 

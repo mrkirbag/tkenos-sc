@@ -1802,7 +1802,7 @@ const flavorGroups = product.flavor_groups ?? [];
 
   .prod-section__hint {
     font-size: 0.8125rem;
-    color: var(--color-text-muted);
+    color: color-mix(in srgb, var(--color-primary-foreground) 75%, transparent);
   }
 
   .prod-section__stock-tag {
@@ -1966,7 +1966,7 @@ const flavorGroups = product.flavor_groups ?? [];
     border-radius: 0.55rem;
     border: none;
     background: transparent;
-    color: var(--color-text-muted);
+    color: var(--color-primary);
     font-size: 0.8125rem;
     font-weight: 600;
     cursor: pointer;
@@ -1975,13 +1975,14 @@ const flavorGroups = product.flavor_groups ?? [];
   }
 
   .prod-flavor-mode-btn:hover {
-    color: var(--color-primary);
+    color: #ffffff;
   }
 
   .prod-flavor-mode-btn--active {
     background: var(--color-secondary);
-    color: var(--color-primary-foreground) !important;
-    font-weight: 700;
+    color: #ffffff !important;
+    font-weight: 800;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
     box-shadow: 0 2px 8px color-mix(in srgb, var(--color-secondary) 30%, transparent);
   }
 
@@ -1997,7 +1998,11 @@ const flavorGroups = product.flavor_groups ?? [];
     gap: 0.5rem;
     font-size: 0.8rem;
     font-weight: 600;
-    color: var(--color-text-muted);
+    color: var(--color-primary);
+  }
+
+  .prod-flavor-half-title span {
+    color: var(--color-primary);
   }
 
   .prod-flavor-half-pill {
@@ -2067,14 +2072,15 @@ const flavorGroups = product.flavor_groups ?? [];
   .prod-flavor-option__input:checked + .prod-flavor-option__box {
     background: var(--color-secondary);
     border-color: var(--color-secondary);
-    color: var(--color-primary-foreground);
-    font-weight: 700;
+    color: #ffffff;
+    font-weight: 800;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
     box-shadow: 0 4px 14px color-mix(in srgb, var(--color-secondary) 35%, transparent);
   }
 
   .prod-flavor-option__input:checked + .prod-flavor-option__box .prod-flavor-option__check {
-    background: var(--color-primary-foreground);
-    border-color: var(--color-primary-foreground);
+    background: #ffffff;
+    border-color: #ffffff;
     color: var(--color-secondary);
   }
 
@@ -2172,14 +2178,15 @@ const flavorGroups = product.flavor_groups ?? [];
   .prod-mod-chip__input:checked + .prod-mod-chip__box {
     background: var(--color-secondary);
     border-color: var(--color-secondary);
-    color: var(--color-primary-foreground);
-    font-weight: 700;
+    color: #ffffff;
+    font-weight: 800;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
     box-shadow: 0 4px 14px color-mix(in srgb, var(--color-secondary) 35%, transparent);
   }
 
   .prod-mod-chip__input:checked + .prod-mod-chip__box .prod-mod-chip__check {
-    background: var(--color-primary-foreground);
-    border-color: var(--color-primary-foreground);
+    background: #ffffff;
+    border-color: #ffffff;
     color: var(--color-secondary);
   }
 
@@ -2280,23 +2287,24 @@ const flavorGroups = product.flavor_groups ?? [];
   .prod-extra-item__input:checked
     + .prod-extra-item__box
     .prod-extra-item__checkbox {
-    background: var(--color-primary-foreground);
-    border-color: var(--color-primary-foreground);
+    background: #ffffff;
+    border-color: #ffffff;
     color: var(--color-secondary);
   }
 
   .prod-extra-item__input:checked
     + .prod-extra-item__box
     .prod-extra-item__name {
-    color: var(--color-primary-foreground);
-    font-weight: 700;
+    color: #ffffff;
+    font-weight: 800;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
   }
 
   .prod-extra-item__input:checked
     + .prod-extra-item__box
     .prod-extra-item__price {
-    background: var(--color-primary-foreground);
-    color: var(--color-secondary);
+    background: rgba(0, 0, 0, 0.25);
+    color: #ffffff;
   }
 
   /* CHECKOUT & TOTAL CARD */

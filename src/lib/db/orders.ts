@@ -511,6 +511,8 @@ export type CreatePublicOrderInput = {
   customer_phone: string;
   delivery_address?: string | null;
   delivery_notes?: string | null;
+  packaging_preference?: 'juntos' | 'separados' | null;
+  packaging_fee?: number;
   items: PublicOrderItemInput[];
 };
 
@@ -528,6 +530,8 @@ export async function createPublicOrderWithItems(
   const customerPhone = input.customer_phone.trim();
   const deliveryAddress = input.delivery_address?.trim() || null;
   const deliveryNotes = input.delivery_notes?.trim() || null;
+  const packagingPreference = input.packaging_preference === 'separados' ? 'separados' : 'juntos';
+  const packagingFee = packagingPreference === 'separados' ? Math.max(0, Number(input.packaging_fee) || 0) : 0;
 
   if (customerName.length < 2) {
     throw new Error('El nombre del cliente es requerido');
@@ -558,9 +562,10 @@ export async function createPublicOrderWithItems(
       INSERT INTO orders (
         id, table_id, order_type, delivery_payment_timing, user_id, status, total,
         customer_name, customer_phone, delivery_address, delivery_notes, delivery_fee,
+        packaging_preference, packaging_fee,
         created_at, updated_at
       )
-      VALUES (?, NULL, ?, 'on_delivery', ?, 'pendiente', 0, ?, ?, ?, ?, 0, ?, ?)
+      VALUES (?, NULL, ?, 'on_delivery', ?, 'pendiente', 0, ?, ?, ?, ?, 0, ?, ?, ?, ?)
     `,
     args: [
       orderId,
@@ -570,6 +575,8 @@ export async function createPublicOrderWithItems(
       customerPhone,
       deliveryAddress,
       deliveryNotes,
+      packagingPreference,
+      packagingFee,
       now,
       now,
     ],

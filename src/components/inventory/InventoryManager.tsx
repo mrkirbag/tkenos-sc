@@ -631,7 +631,7 @@ function InventoryManager({ role = 'admin' }: InventoryManagerProps) {
               type="text"
               value={itemForm.name}
               onChange={(event) => setItemForm((prev) => ({ ...prev, name: event.target.value }))}
-              placeholder="Ej. Caja Coca-Cola 355ml"
+              placeholder=""
               required
               minLength={2}
               disabled={isSaving}
@@ -862,11 +862,10 @@ function InventoryManager({ role = 'admin' }: InventoryManagerProps) {
             <div className="inventory-manager__history-presets">
               <button
                 type="button"
-                className={`inventory-manager__preset-btn ${
-                  historyDateFrom === getTodayDateString() && historyDateTo === getTodayDateString()
+                className={`inventory-manager__preset-btn ${historyDateFrom === getTodayDateString() && historyDateTo === getTodayDateString()
                     ? 'inventory-manager__preset-btn--active'
                     : ''
-                }`}
+                  }`}
                 onClick={() => {
                   const today = getTodayDateString();
                   setHistoryDateFrom(today);
@@ -877,11 +876,10 @@ function InventoryManager({ role = 'admin' }: InventoryManagerProps) {
               </button>
               <button
                 type="button"
-                className={`inventory-manager__preset-btn ${
-                  historyDateFrom === getDaysAgoDateString(7) && historyDateTo === getTodayDateString()
+                className={`inventory-manager__preset-btn ${historyDateFrom === getDaysAgoDateString(7) && historyDateTo === getTodayDateString()
                     ? 'inventory-manager__preset-btn--active'
                     : ''
-                }`}
+                  }`}
                 onClick={() => {
                   setHistoryDateFrom(getDaysAgoDateString(7));
                   setHistoryDateTo(getTodayDateString());
@@ -891,9 +889,8 @@ function InventoryManager({ role = 'admin' }: InventoryManagerProps) {
               </button>
               <button
                 type="button"
-                className={`inventory-manager__preset-btn ${
-                  !historyDateFrom && !historyDateTo ? 'inventory-manager__preset-btn--active' : ''
-                }`}
+                className={`inventory-manager__preset-btn ${!historyDateFrom && !historyDateTo ? 'inventory-manager__preset-btn--active' : ''
+                  }`}
                 onClick={() => {
                   setHistoryDateFrom('');
                   setHistoryDateTo('');

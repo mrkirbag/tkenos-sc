@@ -276,11 +276,11 @@ function ProductsManager() {
       flavor_groups: prev.flavor_groups.map((g) =>
         g.id === groupId
           ? {
-              ...g,
-              options: g.options.map((o) =>
-                o.id === optionId ? { ...o, ...updates } : o,
-              ),
-            }
+            ...g,
+            options: g.options.map((o) =>
+              o.id === optionId ? { ...o, ...updates } : o,
+            ),
+          }
           : g,
       ),
     }));
@@ -303,7 +303,7 @@ function ProductsManager() {
     try {
       const formData = new FormData();
       formData.append('file', file);
-      
+
       const res = await fetch('/api/images', {
         method: 'POST',
         body: formData,
@@ -602,7 +602,7 @@ function ProductsManager() {
               type="text"
               value={form.name}
               onChange={(event) => setForm((prev) => ({ ...prev, name: event.target.value }))}
-              placeholder="Ej. Hamburguesa clásica"
+              placeholder=""
               required
               minLength={2}
               disabled={saveMutation.isPending || isUploadingImage}
@@ -615,8 +615,8 @@ function ProductsManager() {
               {form.image_url ? (
                 <div className="catalog-manager__image-preview">
                   <img src={getProxiedImageUrl(form.image_url)} alt="Vista previa" />
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     className="catalog-manager__image-clear"
                     onClick={() => setForm(prev => ({ ...prev, image_url: '' }))}
                     title="Eliminar imagen"
@@ -652,7 +652,7 @@ function ProductsManager() {
               id="product-description"
               value={form.description}
               onChange={(event) => setForm((prev) => ({ ...prev, description: event.target.value }))}
-              placeholder="Ej. Deliciosa hamburguesa con queso cheddar..."
+              placeholder=""
               rows={2}
               disabled={saveMutation.isPending || isUploadingImage}
               className="catalog-manager__textarea"
