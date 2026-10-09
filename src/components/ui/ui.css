@@ -244,6 +244,8 @@
   align-items: center;
   justify-content: center;
   padding: 1rem;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
 }
 
 .ui-modal__backdrop {
@@ -251,7 +253,9 @@
   inset: 0;
   border: none;
   padding: 0;
-  background: rgb(0 0 0 / 45%);
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   cursor: pointer;
 }
 

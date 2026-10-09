@@ -587,6 +587,7 @@ export default function CartDrawer({
 
     const lines: string[] = [
       `*¡Hola, ${brandName}! Deseo realizar el siguiente pedido:*`,
+      ...(!storeOpen ? [`⚠️ _(Nota: La empresa ${brandName} está fuera de horario)_`] : []),
       '',
       '*DETALLE DEL PEDIDO:*',
       orderLines.join('\n\n'),
@@ -622,11 +623,6 @@ export default function CartDrawer({
   // WhatsApp checkout: create order in backend, then open WhatsApp
   const handleCheckoutWhatsApp = async () => {
     setFormError(null);
-
-    if (!storeOpen) {
-      setFormError('Estamos fuera del horario laboral. Los pedidos se reciben en el horario de atención.');
-      return;
-    }
 
     if (items.length === 0) {
       setFormError('Tu pedido está vacío. Añade productos antes de ordenar.');
@@ -737,70 +733,40 @@ export default function CartDrawer({
       {showFloatingButton && (
         <button
           type="button"
-          className={`cart-drawer-fab ${count > 0 ? 'cart-drawer-fab--has-items' : ''} ${badgePulse ? 'cart-drawer-fab--pulse' : ''
-            } ${!storeOpen ? 'cart-drawer-fab--disabled' : ''}`}
+          className={`cart-drawer-fab ${count > 0 ? 'cart-drawer-fab--has-items' : ''} ${badgePulse ? 'cart-drawer-fab--pulse' : ''}`}
           onClick={() => {
-            if (!storeOpen) return;
             setIsOpen(true);
           }}
-          disabled={!storeOpen}
-          aria-label={
-            !storeOpen
-              ? 'Pedidos dentro del horario laboral'
-              : `Ver mi pedido (${count} productos)`
-          }
+          aria-label={`Ver mi pedido (${count} productos)`}
           aria-expanded={isOpen}
-          title={
-            !storeOpen
-              ? `Pedidos dentro del horario laboral (${openingHour || ''} - ${closingHour || ''})`
-              : undefined
-          }
         >
-          {storeOpen ? (
-            <>
-              <div className="cart-drawer-fab__glow" aria-hidden="true" />
-              <div className="cart-drawer-fab__icon-wrapper">
-                <ShoppingBag className="cart-drawer-fab__icon" size={20} strokeWidth={2.2} />
-                {count > 0 && <span className="cart-drawer-fab__badge">{count}</span>}
+          <div className="cart-drawer-fab__glow" aria-hidden="true" />
+          <div className="cart-drawer-fab__icon-wrapper">
+            <ShoppingBag className="cart-drawer-fab__icon" size={20} strokeWidth={2.2} />
+            {count > 0 && <span className="cart-drawer-fab__badge">{count}</span>}
+          </div>
+          <div className="cart-drawer-fab__content">
+            <div className="cart-drawer-fab__text">
+              <span className="cart-drawer-fab__label">
+                {count > 0 ? 'Ver mi pedido' : 'Mi pedido'}
+              </span>
+              <span className="cart-drawer-fab__sub">
+                {count > 0
+                  ? `${count} ${count === 1 ? 'producto' : 'productos'}`
+                  : !storeOpen
+                    ? 'Fuera de horario'
+                    : 'Sin productos'}
+              </span>
+            </div>
+            {count > 0 && (
+              <div className="cart-drawer-fab__total-tag">
+                {formatPriceByCurrency(total, activeCurrency, rates)}
               </div>
-              <div className="cart-drawer-fab__content">
-                <div className="cart-drawer-fab__text">
-                  <span className="cart-drawer-fab__label">
-                    {count > 0 ? 'Ver mi pedido' : 'Mi pedido'}
-                  </span>
-                  <span className="cart-drawer-fab__sub">
-                    {count > 0
-                      ? `${count} ${count === 1 ? 'producto' : 'productos'}`
-                      : 'Sin productos'}
-                  </span>
-                </div>
-                {count > 0 && (
-                  <div className="cart-drawer-fab__total-tag">
-                    {formatPriceByCurrency(total, activeCurrency, rates)}
-                  </div>
-                )}
-              </div>
-              <div className="cart-drawer-fab__chevron" aria-hidden="true">
-                <ChevronRight size={18} strokeWidth={2.5} />
-              </div>
-            </>
-          ) : (
-            <>
-              <div className="cart-drawer-fab__icon-wrapper cart-drawer-fab__icon-wrapper--closed">
-                <Clock className="cart-drawer-fab__icon" size={20} strokeWidth={2.2} />
-              </div>
-              <div className="cart-drawer-fab__content">
-                <div className="cart-drawer-fab__text">
-                  <span className="cart-drawer-fab__label">
-                    Pedidos dentro del horario laboral
-                  </span>
-                  <span className="cart-drawer-fab__sub">
-                    {openingHour && closingHour ? `Horario: ${openingHour} a ${closingHour}` : 'Cerrado por ahora'}
-                  </span>
-                </div>
-              </div>
-            </>
-          )}
+            )}
+          </div>
+          <div className="cart-drawer-fab__chevron" aria-hidden="true">
+            <ChevronRight size={18} strokeWidth={2.5} />
+          </div>
         </button>
       )}
 
@@ -855,10 +821,17 @@ export default function CartDrawer({
           <div className="cart-drawer__body">
             {!storeOpen && (
               <div className="cart-drawer__closed-notice" role="alert">
-                <Clock size={16} />
-                <span>
-                  Fuera de horario laboral. Los pedidos se reciben de {openingHour} a {closingHour} (Hora VZLA).
-                </span>
+                <Clock size={18} />
+                <div className="cart-drawer__closed-notice-content">
+                  <span className="cart-drawer__closed-notice-title">
+                    La empresa {brandName} está fuera de horario.
+                  </span>
+                  {openingHour && closingHour && (
+                    <span className="cart-drawer__closed-notice-sub">
+                      Horario de atención: {openingHour} a {closingHour}
+                    </span>
+                  )}
+                </div>
               </div>
             )}
             {items.length === 0 ? (
@@ -1372,19 +1345,21 @@ export default function CartDrawer({
                 </div>
               )}
 
+              {!storeOpen && (
+                <div className="cart-drawer__footer-schedule-notice" role="note">
+                  <Clock size={15} />
+                  <span>La empresa {brandName} está fuera de horario.</span>
+                </div>
+              )}
+
               {/* WHATSAPP SUBMIT BUTTON */}
               <button
                 type="button"
-                className={`cart-drawer__submit-btn ${!storeOpen ? 'cart-drawer__submit-btn--disabled' : ''}`}
+                className="cart-drawer__submit-btn"
                 onClick={handleCheckoutWhatsApp}
-                disabled={isSubmitting || submitSuccess || !storeOpen}
+                disabled={isSubmitting || submitSuccess}
               >
-                {!storeOpen ? (
-                  <>
-                    <Clock size={18} />
-                    <span>Pedidos dentro del horario laboral</span>
-                  </>
-                ) : isSubmitting ? (
+                {isSubmitting ? (
                   <>
                     <Loader2 className="cart-drawer__spin" size={20} />
                     <span>Creando pedido...</span>

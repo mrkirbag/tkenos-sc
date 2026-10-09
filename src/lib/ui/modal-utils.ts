@@ -1,14 +1,23 @@
 import { useEffect, type RefObject } from 'react';
 
+let lockCount = 0;
+let previousBodyOverflow = '';
+
 export function useModalBodyLock(open: boolean): void {
   useEffect(() => {
     if (!open) return;
 
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    if (lockCount === 0) {
+      previousBodyOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+    }
+    lockCount++;
 
     return () => {
-      document.body.style.overflow = previousOverflow;
+      lockCount = Math.max(0, lockCount - 1);
+      if (lockCount === 0) {
+        document.body.style.overflow = previousBodyOverflow;
+      }
     };
   }, [open]);
 }

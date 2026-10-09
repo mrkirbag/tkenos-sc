@@ -94,7 +94,7 @@ export function getStoreScheduleStatus(
     openingHour,
     closingHour,
     currentVenezuelaTime: timeString,
-    statusLabel: open ? 'Abierto para pedidos' : 'Cerrado para pedidos',
-    actionMessage: open ? 'Ver mi pedido' : 'Pedidos dentro del horario laboral',
+    statusLabel: open ? 'Abierto para pedidos' : 'Fuera de horario laboral',
+    actionMessage: 'Ver mi pedido',
   };
 }

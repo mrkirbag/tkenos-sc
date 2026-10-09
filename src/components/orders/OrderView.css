@@ -1163,6 +1163,17 @@
     transform: translateY(0);
   }
 
+  /* When a ticket modal is active, hide and deactivate the mobile drawer */
+  .order-view--ticket-modal-active .order-view__ticket {
+    transform: translateY(105%) !important;
+    pointer-events: none !important;
+  }
+
+  .order-view--ticket-modal-active .order-view__mobile-backdrop {
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
   /* When order is readonly (!isEditable), ticket stays in normal inline flow */
   .order-view__layout--readonly .order-view__ticket {
     position: static !important;

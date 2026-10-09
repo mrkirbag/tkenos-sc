@@ -382,22 +382,136 @@
   padding-top: 0.5rem;
 }
 
+.invoices-list__ticket-wrapper {
+  margin-top: 1rem;
+}
+
+.invoices-list__ticket-wrapper--hidden-screen {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .invoices-list__modal {
+    width: 100%;
+    max-width: 100%;
+    max-height: min(94dvh, calc(100vh - 1rem));
+    padding: 1rem;
+    border-radius: 1rem;
+  }
+
+  .invoices-list__modal-actions {
+    flex-direction: column;
+  }
+
+  .invoices-list__modal-actions > button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
 @media print {
-  body * {
-    visibility: hidden;
+  @page {
+    size: 50mm auto;
+    margin: 0;
   }
 
-  .invoices-list__ticket,
-  .invoices-list__ticket * {
-    visibility: visible;
+  /* 1. Resetear html y body a 0 márgenes y altura automática */
+  html,
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    min-height: 0 !important;
+    height: auto !important;
+    background: #fff !important;
+    overflow: visible !important;
   }
 
-  .invoices-list__ticket {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 80mm;
-    border: none;
-    padding: 0;
+  /* 2. Ocultar los elementos del modal que no son el ticket para que no ocupen espacio */
+  .invoices-list__modal-overlay .ui-modal__backdrop,
+  .invoices-list__modal-overlay .ui-modal__header,
+  .invoices-list__detail-meta,
+  .invoices-list__detail-items,
+  .invoices-list__detail-total,
+  .invoices-list__detail-payments,
+  .invoices-list__modal-actions {
+    display: none !important;
+  }
+
+  /* 3. Desactivar position:fixed y el centrado flex del modal */
+  .invoices-list__modal-overlay.ui-modal {
+    position: static !important;
+    display: block !important;
+    inset: auto !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* 4. Desactivar position:relative y límites de tamaño del panel */
+  .invoices-list__modal-overlay .ui-modal__panel,
+  .invoices-list__modal {
+    position: static !important;
+    display: block !important;
+    width: auto !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    overflow: visible !important;
+  }
+
+  .invoices-list__modal-overlay .ui-modal__body {
+    position: static !important;
+    display: block !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    max-height: none !important;
+    height: auto !important;
+  }
+
+  .invoices-list__ticket-wrapper,
+  .invoices-list__ticket-wrapper--hidden-screen {
+    position: static !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    background: transparent !important;
+    display: block !important;
+  }
+
+  /* 5. Asegurar que el ticket esté visible en la esquina superior izquierda sin espacios */
+  #sale-ticket,
+  #sale-ticket * {
+    visibility: visible !important;
+  }
+
+  #sale-ticket {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 50mm !important;
+    max-width: 50mm !important;
+    margin: 0 !important;
+    padding: 2mm !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    background: #fff !important;
+    color: #000 !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
   }
 }

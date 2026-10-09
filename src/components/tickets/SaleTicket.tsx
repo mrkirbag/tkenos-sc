@@ -64,9 +64,11 @@ export default function SaleTicket({
         <p>#{order.id.slice(0, 8).toUpperCase()}</p>
         <p>{formatTicketDateTime(order.updated_at)}</p>
         {cashierUsername && <p>Cajero: {cashierUsername}</p>}
+        {order.customer_phone && <p>Tel: {order.customer_phone}</p>}
         {order.order_type === 'delivery' && order.delivery_address && (
           <p>Dir: {order.delivery_address}</p>
         )}
+        {order.delivery_notes && <p>Notas: {order.delivery_notes}</p>}
         {order.order_type === 'para_llevar' && <p>Modalidad: PARA LLEVAR</p>}
       </section>
 

@@ -681,14 +681,12 @@ const flavorGroups = product.flavor_groups ?? [];
                 <div class="prod-cta-group">
                   <button
                     type="submit"
-                    class={`prod-submit-btn ${!storeIsOpen ? "prod-submit-btn--closed" : ""} ${isOutOfStock ? "prod-submit-btn--disabled" : ""}`}
+                    class={`prod-submit-btn ${isOutOfStock ? "prod-submit-btn--disabled" : ""}`}
                     id="product-submit-btn"
-                    disabled={!storeIsOpen || isOutOfStock}
+                    disabled={isOutOfStock}
                     title={isOutOfStock
                       ? "Producto agotado en inventario"
-                      : !storeIsOpen
-                        ? `Pedidos dentro del horario laboral (${brand.contact.openingHour || ""} - ${brand.contact.closingHour || ""})`
-                        : undefined}
+                      : undefined}
                   >
                     {
                       isOutOfStock ? (
@@ -716,7 +714,7 @@ const flavorGroups = product.flavor_groups ?? [];
                             Producto Agotado
                           </span>
                         </>
-                      ) : storeIsOpen ? (
+                      ) : (
                         <>
                           <span
                             class="prod-submit-btn__icon"
@@ -743,30 +741,6 @@ const flavorGroups = product.flavor_groups ?? [];
                           <span class="prod-submit-btn__dot">•</span>
                           <span class="prod-submit-btn__price" id="btn-total">
                             {formatCop(product.price)}
-                          </span>
-                        </>
-                      ) : (
-                        <>
-                          <span
-                            class="prod-submit-btn__icon"
-                            aria-hidden="true"
-                          >
-                            <svg
-                              viewBox="0 0 24 24"
-                              width="20"
-                              height="20"
-                              fill="none"
-                              stroke="currentColor"
-                              stroke-width="2"
-                              stroke-linecap="round"
-                              stroke-linejoin="round"
-                            >
-                              <circle cx="12" cy="12" r="10" />
-                              <polyline points="12 6 12 12 16 14" />
-                            </svg>
-                          </span>
-                          <span class="prod-submit-btn__label">
-                            Pedidos dentro del horario laboral
                           </span>
                         </>
                       )
@@ -1182,7 +1156,7 @@ const flavorGroups = product.flavor_groups ?? [];
         form.addEventListener("submit", (event) => {
           event.preventDefault();
 
-          if (!isStoreOpen || (hasInventory && stock !== null && stock <= 0)) {
+          if (hasInventory && stock !== null && stock <= 0) {
             return;
           }
 

@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Printer, X } from 'lucide-react';
 
 import type { OrderItemWithProduct } from '@/lib/db/orders';
@@ -27,6 +27,18 @@ export default function KitchenTicketModal({
 
   useModalBodyLock(true);
 
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onClose();
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   function handlePrint() {
     window.print();
   }
@@ -50,6 +62,7 @@ export default function KitchenTicketModal({
       <div
         className="kitchen-ticket-modal"
         role="dialog"
+        aria-modal="true"
         aria-labelledby="kitchen-ticket-modal-title"
         onClick={(event) => event.stopPropagation()}
       >

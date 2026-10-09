@@ -1,24 +1,28 @@
 .kitchen-ticket-modal__overlay {
   position: fixed;
   inset: 0;
-  z-index: 60;
+  z-index: 1000;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 1rem;
-  background: rgb(0 0 0 / 45%);
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  overscroll-behavior: contain;
+  touch-action: pan-y;
 }
 
 .kitchen-ticket-modal {
-  width: min(100%, 24rem);
-  max-height: calc(100vh - 2rem);
+  width: min(100%, 25rem);
+  max-height: min(92dvh, calc(100vh - 2rem));
   display: flex;
   flex-direction: column;
-  border-radius: 1rem;
+  border-radius: 1.25rem;
   background: var(--color-primary);
   border: 1.5px solid var(--color-secondary);
   color: var(--color-primary-foreground);
-  box-shadow: 0 20px 50px rgb(0 0 0 / 25%);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
   overflow: hidden;
 }
 
@@ -30,6 +34,7 @@
   padding: 1rem 1.25rem;
   border-bottom: 1.5px solid var(--color-secondary);
   background: var(--color-primary);
+  flex-shrink: 0;
 }
 
 .kitchen-ticket-modal__eyebrow {
@@ -52,34 +57,44 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 2rem;
-  height: 2rem;
+  min-width: 2.5rem;
+  min-height: 2.5rem;
+  width: 2.5rem;
+  height: 2.5rem;
   border: none;
   border-radius: 0.5rem;
-  background: transparent;
+  background: color-mix(in srgb, var(--color-secondary) 15%, transparent);
   color: var(--color-primary-foreground);
   cursor: pointer;
   transition: all 0.15s ease;
+  flex-shrink: 0;
 }
 
 .kitchen-ticket-modal__close:hover {
-  background: color-mix(in srgb, var(--color-secondary) 25%, transparent);
+  background: color-mix(in srgb, var(--color-secondary) 30%, transparent);
 }
 
 .kitchen-ticket-modal__preview {
-  flex: 1;
-  overflow: auto;
-  padding: 1.25rem;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  padding: 1.25rem 0.75rem;
   background: color-mix(in srgb, var(--color-secondary) 10%, var(--color-primary));
+  display: flex;
+  justify-content: center;
 }
 
 .kitchen-ticket-modal__footer {
   display: flex;
+  align-items: center;
   justify-content: flex-end;
   gap: 0.75rem;
   padding: 1rem 1.25rem;
   border-top: 1.5px solid var(--color-secondary);
   background: var(--color-primary);
+  flex-shrink: 0;
 }
 
 .kitchen-ticket-modal__btn {
@@ -87,12 +102,13 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  padding: 0.625rem 1rem;
-  border-radius: 0.625rem;
+  min-height: 2.75rem;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.75rem;
   border: 1px solid transparent;
   font: inherit;
   font-size: 0.875rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -115,6 +131,45 @@
 
 .kitchen-ticket-modal__btn--primary:hover {
   opacity: 0.9;
+}
+
+@media (max-width: 640px) {
+  .kitchen-ticket-modal__overlay {
+    padding: 0.5rem;
+    align-items: center;
+  }
+
+  .kitchen-ticket-modal {
+    width: 100%;
+    max-width: 100%;
+    max-height: min(94dvh, calc(100vh - 1rem));
+    border-radius: 1rem;
+  }
+
+  .kitchen-ticket-modal__header {
+    padding: 0.875rem 1rem;
+  }
+
+  .kitchen-ticket-modal__header h3 {
+    font-size: 1rem;
+  }
+
+  .kitchen-ticket-modal__preview {
+    padding: 1rem 0.5rem;
+  }
+
+  .kitchen-ticket-modal__footer {
+    padding: 0.875rem 1rem max(0.875rem, env(safe-area-inset-bottom, 0px));
+    gap: 0.625rem;
+  }
+
+  .kitchen-ticket-modal__btn--ghost {
+    flex: 1;
+  }
+
+  .kitchen-ticket-modal__btn--primary {
+    flex: 1.5;
+  }
 }
 
 @media print {

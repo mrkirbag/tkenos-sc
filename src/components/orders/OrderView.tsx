@@ -247,6 +247,7 @@ function OrderView({ orderId, canDeliver = false }: OrderViewProps) {
     },
     onSuccess: (json) => {
       invalidateOrder();
+      setIsMobileTicketOpen(false);
       setKitchenTicketSentAt(json.order.updated_at);
       setKitchenTicketOpen(true);
     },
@@ -535,7 +536,9 @@ function OrderView({ orderId, canDeliver = false }: OrderViewProps) {
   const isUnpaid = order.status !== 'pagado' && order.status !== 'entregado' && order.status !== 'cancelado';
 
   return (
-    <div className="order-view">
+    <div
+      className={`order-view ${kitchenTicketOpen || saleTicketOpen ? 'order-view--ticket-modal-active' : ''}`.trim()}
+    >
       <a
         href={order.order_type === 'delivery' ? '/panel/domicilios' : '/panel/mesas'}
         className="order-view__back"
@@ -950,7 +953,10 @@ function OrderView({ orderId, canDeliver = false }: OrderViewProps) {
                   <button
                     type="button"
                     className="order-view__print-ticket-btn"
-                    onClick={() => setSaleTicketOpen(true)}
+                    onClick={() => {
+                      setIsMobileTicketOpen(false);
+                      setSaleTicketOpen(true);
+                    }}
                   >
                     <Printer size={16} />
                     Imprimir ticket
@@ -1002,7 +1008,10 @@ function OrderView({ orderId, canDeliver = false }: OrderViewProps) {
                 <button
                   type="button"
                   className="order-view__print-ticket-btn"
-                  onClick={() => setKitchenTicketOpen(true)}
+                  onClick={() => {
+                    setIsMobileTicketOpen(false);
+                    setKitchenTicketOpen(true);
+                  }}
                 >
                   <Printer size={16} />
                   Ver ticket de cocina
@@ -1030,7 +1039,10 @@ function OrderView({ orderId, canDeliver = false }: OrderViewProps) {
                 <button
                   type="button"
                   className="order-view__print-ticket-btn"
-                  onClick={() => setKitchenTicketOpen(true)}
+                  onClick={() => {
+                    setIsMobileTicketOpen(false);
+                    setKitchenTicketOpen(true);
+                  }}
                 >
                   <Printer size={16} />
                   Ver ticket de cocina

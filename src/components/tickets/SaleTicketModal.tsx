@@ -1,8 +1,9 @@
 import { Printer, X } from 'lucide-react';
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 import type { OrderItemWithProduct } from '@/lib/db/orders';
 import type { Order, OrderPayment } from '@/lib/db/types';
+import { useModalBodyLock } from '@/lib/ui/modal-utils';
 
 import SaleTicket from './SaleTicket';
 import './SaleTicketModal.css';
@@ -30,6 +31,20 @@ export default function SaleTicketModal({
 }: SaleTicketModalProps) {
   const backdropPointerDownRef = useRef(false);
 
+  useModalBodyLock(true);
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        event.preventDefault();
+        onClose();
+      }
+    }
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
   function handlePrint() {
     window.print();
   }
@@ -53,6 +68,7 @@ export default function SaleTicketModal({
       <div
         className="sale-ticket-modal"
         role="dialog"
+        aria-modal="true"
         aria-labelledby="sale-ticket-modal-title"
         onClick={(event) => event.stopPropagation()}
       >

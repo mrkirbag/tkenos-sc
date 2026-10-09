@@ -60,8 +60,8 @@ export default function KitchenTicket({
             <p>
               <strong>{order.customer_name}</strong> {order.order_type === 'para_llevar' && '— [PARA LLEVAR]'}
             </p>
-            <p>{order.customer_phone}</p>
-            {order.order_type === 'delivery' && <p>{order.delivery_address}</p>}
+            {order.customer_phone && <p>Tel: {order.customer_phone}</p>}
+            {order.order_type === 'delivery' && order.delivery_address && <p>{order.delivery_address}</p>}
             {order.delivery_notes && <p className="kitchen-ticket__notes">{order.delivery_notes}</p>}
           </section>
         </>

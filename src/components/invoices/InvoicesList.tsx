@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { brand } from '@/data/brand';
 import { Alert, EmptyState, SkeletonTable } from '@/components/ui/Feedback';
 import Modal from '@/components/ui/Modal';
-import SaleTicket from '@/components/tickets/SaleTicket';
+import SaleTicketModal from '@/components/tickets/SaleTicketModal';
 import type { InvoiceListItem } from '@/lib/db/orders';
 import type { OrderPayment } from '@/lib/db/types';
 import {
@@ -66,7 +66,7 @@ function InvoicesList() {
   const { invoices, tables, cashiers, isLoading, isFetching, error } = useInvoices(appliedFilters);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const { detail, isLoading: detailLoading } = useInvoiceDetail(selectedId);
-  const [showTicket, setShowTicket] = useState(false);
+  const [ticketModalOpen, setTicketModalOpen] = useState(false);
 
   const loadError =
     error instanceof Error ? error.message : error ? 'No se pudieron cargar las facturas' : '';
@@ -75,12 +75,12 @@ function InvoicesList() {
 
   function openDetail(invoice: InvoiceListItem) {
     setSelectedId(invoice.id);
-    setShowTicket(false);
+    setTicketModalOpen(false);
   }
 
   function closeDetail() {
     setSelectedId(null);
-    setShowTicket(false);
+    setTicketModalOpen(false);
   }
 
   function handlePrint() {
@@ -280,38 +280,28 @@ function InvoicesList() {
             <div className="invoices-list__modal-actions">
               <button
                 type="button"
-                className="invoices-list__action-btn invoices-list__action-btn--outline"
-                onClick={() => setShowTicket((v) => !v)}
+                className="invoices-list__action-btn invoices-list__action-btn--primary"
+                onClick={() => setTicketModalOpen(true)}
               >
-                <Receipt size={16} />
-                {showTicket ? 'Ocultar ticket' : 'Ver ticket'}
+                <Printer size={16} />
+                Ver e imprimir ticket
               </button>
-              {showTicket && (
-                <button
-                  type="button"
-                  className="invoices-list__action-btn invoices-list__action-btn--primary"
-                  onClick={handlePrint}
-                >
-                  <Printer size={16} />
-                  Imprimir
-                </button>
-              )}
             </div>
-
-            {showTicket && (
-              <div className="invoices-list__ticket-wrapper" id="invoice-ticket" style={{ marginTop: '1rem' }}>
-                <SaleTicket
-                  order={detail.order as any}
-                  items={detail.items as any}
-                  tableNumber={detail.table_number}
-                  cashierUsername={detail.cashier_username}
-                  payments={detail.payments}
-                />
-              </div>
-            )}
           </>
         )}
       </Modal>
+
+      {ticketModalOpen && detail && (
+        <SaleTicketModal
+          order={detail.order as any}
+          items={detail.items as any}
+          tableNumber={detail.table_number}
+          cashierUsername={detail.cashier_username}
+          payments={detail.payments}
+          title={`Ticket — Factura #${detail.order.id.slice(0, 8).toUpperCase()}`}
+          onClose={() => setTicketModalOpen(false)}
+        />
+      )}
     </div>
   );
 }

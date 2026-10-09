@@ -292,7 +292,7 @@ const structuredData = {
               aria-hidden="true"></span>
             <span id="store-status-text"
               >{
-                storeIsOpen ? "Abierto para pedidos" : "Cerrado para pedidos"
+                storeIsOpen ? "Abierto para pedidos" : "Fuera de horario laboral"
               }</span
             >
             {
@@ -322,12 +322,12 @@ const structuredData = {
                   <circle cx="12" cy="10" r="3" />
                 </svg>
                 <a
-                  href="https://www.google.com/maps?q=7.768288612365723,-72.21324920654297&z=17&hl=es"
+                  href="https://maps.app.goo.gl/p38aKm9xKBXuctP27?g_st=ic"
                   target="_blank"
                   rel="noopener noreferrer"
                   class="menu-hero__location-link"
                 >
-                  <span>Ve nuestra dirección aquí</span>
+                  <span>Da clic aquí para ver nuestra ubicación</span>
                 </a>
               </div>
             )
@@ -557,7 +557,7 @@ const structuredData = {
           statusBadge.classList.remove("menu-hero__status--open");
           statusBadge.classList.add("menu-hero__status--closed");
           statusDot?.classList.add("menu-hero__status-dot--closed");
-          statusText.textContent = "Cerrado para pedidos";
+          statusText.textContent = "Fuera de horario laboral";
         }
       }
 

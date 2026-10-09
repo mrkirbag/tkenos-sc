@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { ArrowLeftRight, Loader2, Plus, Printer, Receipt, Trash2, X } from 'lucide-react';
 
-import SaleTicket from '@/components/tickets/SaleTicket';
+import SaleTicketModal from '@/components/tickets/SaleTicketModal';
 import type { OrderItemWithProduct, OrderListItem } from '@/lib/db/orders';
 import type { ExchangeRates, OrderPaymentInput } from '@/lib/db/types';
 import { formatOrderLabel } from '@/lib/orders/display';
@@ -92,7 +92,7 @@ export default function PayOrderModal({
     { id: createLineId(), method: 'efectivo', amount: String(order.total), received: '' },
   ]);
   const [formError, setFormError] = useState('');
-  const [showTicket, setShowTicket] = useState(false);
+  const [showTicketModal, setShowTicketModal] = useState(false);
   const [items, setItems] = useState<OrderItemWithProduct[]>([]);
   const [itemsLoading, setItemsLoading] = useState(true);
   const modalRef = useRef<HTMLDivElement>(null);
@@ -357,35 +357,13 @@ export default function PayOrderModal({
             <button
               type="button"
               className="pay-modal__ticket-toggle"
-              onClick={() => setShowTicket((value) => !value)}
+              onClick={() => setShowTicketModal(true)}
               disabled={itemsLoading || items.length === 0}
             >
               <Receipt size={16} />
-              {showTicket ? 'Ocultar ticket' : 'Ver ticket'}
+              Ver e imprimir ticket
             </button>
-            {showTicket && (
-              <button
-                type="button"
-                className="pay-modal__ticket-toggle"
-                onClick={() => window.print()}
-              >
-                <Printer size={16} />
-                Imprimir
-              </button>
-            )}
           </div>
-
-          {showTicket && !itemsLoading && items.length > 0 && (
-            <div className="pay-modal__ticket-preview">
-              <SaleTicket
-                order={order}
-                items={items}
-                tableNumber={order.table_number}
-                cashierUsername={cashierUsername}
-                paymentPreview={paymentPreview}
-              />
-            </div>
-          )}
 
           <div className="pay-modal__lines">
             {lines.map((line, index) => {
@@ -568,6 +546,18 @@ export default function PayOrderModal({
           </button>
         </footer>
       </div>
+
+      {showTicketModal && !itemsLoading && items.length > 0 && (
+        <SaleTicketModal
+          order={order}
+          items={items}
+          tableNumber={order.table_number}
+          cashierUsername={cashierUsername}
+          paymentPreview={paymentPreview}
+          title="Ticket previo al cobro"
+          onClose={() => setShowTicketModal(false)}
+        />
+      )}
     </div>
   );
 }

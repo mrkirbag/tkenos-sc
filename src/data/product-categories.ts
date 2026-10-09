@@ -17,6 +17,7 @@ export const productCategories: ProductCategory[] = [
   { id: 'tequenos', label: 'Tequeños' },
   { id: 'pastelitos', label: 'Pastelitos' },
   { id: 'tkelunch', label: 'Tke Lunch' },
+  { id: 'supertke', label: 'Super Tke' },
   { id: 'tkenospasapaleros', label: 'Tkeños Pasapaleros' },
   { id: 'pastelitospasapaleros', label: 'Pastelitos Pasapaleros' },
   { id: 'pasapalosmixtos', label: 'Pasapalos Mixtos' },
