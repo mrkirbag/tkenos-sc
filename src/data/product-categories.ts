@@ -13,6 +13,23 @@ export type InventoryUnit = {
 
 /** Categorías unificadas de productos (catálogo, menú e inventario). */
 export const productCategories: ProductCategory[] = [
+  { id: 'tkelunch', label: 'Tke Lunch' },
+  { id: 'pastelitos', label: 'Pastelitos' },
+  { id: 'tkelunchcombinados', label: 'Tke Lunch Combinados' },
+  { id: 'supertke', label: 'Super Tke' },
+  { id: 'combosmixtos', label: 'Combos Mixtos' },
+  { id: 'tkenospasapaleros', label: 'T-keños Pasapaleros' },
+  { id: 'pastelitospasapaleros', label: 'Pastelitos Pasapaleros' },
+  { id: 'pasapalosmixtos', label: 'Pasapalos Mixtos' },
+  { id: 'bebidas', label: 'Bebidas' },
+  { id: 'toppings', label: 'Toppings' },
+];
+
+/** Categorías del menú para comandas y catálogo. */
+export const menuCategories: MenuCategory[] = productCategories;
+
+/** Categorías de insumos controlados en inventario. */
+export const inventoryCategories: InventoryCategory[] = [
   { id: 'combos', label: 'Combos' },
   { id: 'tequenos', label: 'Tequeños' },
   { id: 'pastelitos', label: 'Pastelitos' },
@@ -24,14 +41,6 @@ export const productCategories: ProductCategory[] = [
   { id: 'congelados', label: 'Congelados' },
   { id: 'toppings', label: 'Toppings' },
   { id: 'bebidas', label: 'Bebidas' },
-];
-
-/** Categorías del menú para comandas y catálogo. */
-export const menuCategories: MenuCategory[] = productCategories;
-
-/** Categorías de insumos controlados en inventario (catálogo más categorías exclusivas de inventario). */
-export const inventoryCategories: InventoryCategory[] = [
-  ...productCategories,
   { id: 'paqueteria', label: 'Paquetería' },
 ];
 
@@ -39,7 +48,19 @@ export const inventoryUnits: InventoryUnit[] = [
   { id: 'unidades', label: 'Unidades' }
 ];
 
+const LEGACY_MENU_CATEGORY_LABELS: Record<string, string> = {
+  combos: 'Combos',
+  tequenos: 'Tequeños',
+  congelados: 'Congelados',
+  toppings: 'Toppings',
+  salsas: 'Salsas',
+  adicionales: 'Adicionales',
+};
+
 const LEGACY_INVENTORY_CATEGORY_LABELS: Record<string, string> = {
+  combos: 'Combos',
+  tequenos: 'Tequeños',
+  congelados: 'Congelados',
   panaderia: 'Panadería',
   insumos: 'Insumos',
   empaques: 'Empaques',
@@ -50,10 +71,11 @@ const LEGACY_INVENTORY_CATEGORY_LABELS: Record<string, string> = {
 };
 
 export function getMenuCategoryLabel(id: string): string {
-  if (id === 'toppings') return 'Toppings';
-  if (id === 'salsas') return 'Salsas';
-  if (id === 'adicionales') return 'Adicionales';
-  return menuCategories.find((c) => c.id === id)?.label ?? id;
+  return (
+    menuCategories.find((c) => c.id === id)?.label ??
+    LEGACY_MENU_CATEGORY_LABELS[id] ??
+    id
+  );
 }
 
 export function getInventoryCategoryLabel(id: string): string {

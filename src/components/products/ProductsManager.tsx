@@ -164,10 +164,14 @@ function ProductsManager() {
       ];
     }
 
+    const validCategory = menuCategories.some((c) => c.id === product.category)
+      ? product.category
+      : (menuCategories[0]?.id ?? product.category);
+
     setForm({
       name: product.name,
       price: String(product.price),
-      category: product.category,
+      category: validCategory,
       image_url: product.image_url ?? '',
       description: product.description ?? '',
       active: product.active,

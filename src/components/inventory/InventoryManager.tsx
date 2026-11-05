@@ -340,9 +340,12 @@ function InventoryManager({ role = 'admin' }: InventoryManagerProps) {
     if (isProductor) return;
     setFormMode('edit');
     setSelectedItem(item);
+    const validCategory = inventoryCategories.some((c) => c.id === item.category)
+      ? item.category
+      : (inventoryCategories[0]?.id ?? item.category);
     setItemForm({
       name: item.name,
-      category: item.category,
+      category: validCategory,
       unit: item.unit,
       stock: String(item.stock),
       min_stock: String(item.min_stock),

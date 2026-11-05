@@ -110,7 +110,7 @@ describe('productos con receta de múltiples insumos e inventario', () => {
     const created = await createCatalogProduct({
       name: 'Combo 1 Familiar (Caja + Bolsa + Salsa + Tequeños)',
       price: 45000,
-      category: 'combos',
+      category: 'combosmixtos',
       inventory_items: recipeItems,
       flavor_groups: flavorGroups,
     });
