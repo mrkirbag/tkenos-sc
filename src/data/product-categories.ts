@@ -21,6 +21,7 @@ export const productCategories: ProductCategory[] = [
   { id: 'tkenospasapaleros', label: 'T-keños Pasapaleros' },
   { id: 'pastelitospasapaleros', label: 'Pastelitos Pasapaleros' },
   { id: 'pasapalosmixtos', label: 'Pasapalos Mixtos' },
+  { id: 'congelados', label: 'Congelados' },
   { id: 'bebidas', label: 'Bebidas' },
   { id: 'toppings', label: 'Toppings' },
 ];
